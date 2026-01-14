@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="style_sushi.css">
 </head>
@@ -10,37 +10,33 @@
 
 <div class="header">
     <div class="brand">
-        <div class="logo-circle" style="color: white;">Y</div>
-        <div style="font-weight: 800; font-size: 18px;">YAKUZA</div>
+        <div class="logo-circle" style="color:white">Y</div>
+        <div style="font-weight:900; font-size:20px; letter-spacing:-0.5px">YAKUZA</div>
     </div>
-    <div style="display: flex; gap: 12px; align-items: center;">
-        <div class="cart-btn" onclick="openCart()" style="cursor:pointer; position:relative;">
-            <span style="font-size: 22px;">🛒</span>
-            <div id="c-count" style="position:absolute; top:-5px; right:-5px; background:var(--accent); color:white; font-size:10px; width:18px; height:18px; border-radius:50%; display:none; align-items:center; justify-content:center;">0</div>
+    <div style="display:flex; gap:12px; align-items:center;">
+        <div class="cart-btn" onclick="openCart()" style="position:relative; cursor:pointer; background:rgba(255,255,255,0.08); width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+            <span style="font-size:20px;">🛒</span>
+            <div id="c-count" style="position:absolute; top:-2px; right:-2px; background:var(--accent); color:white; font-size:10px; width:18px; height:18px; border-radius:50%; display:none; align-items:center; justify-content:center; font-weight:800; border:2px solid #000;">0</div>
         </div>
-        <img id="u-avatar" style="width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--glass-border);" src="https://via.placeholder.com/36">
+        <img id="u-avatar" style="width:38px; height:38px; border-radius:50%; border:1px solid var(--glass-border); object-fit:cover" src="https://via.placeholder.com/38">
     </div>
 </div>
 
 <div class="main-content">
     <div class="promo-container">
         <div class="promo-card">
-            <div class="promo-text">
-                <h4>Сет месяца</h4>
-                <p>Скидка 20% на все сеты<br>до конца недели!</p>
-            </div>
-            <span style="font-size: 50px; position:absolute; right:10px; bottom:10px; opacity:0.3;">🍱</span>
+            <h4 style="margin:0; font-size:22px">Скидка -20%</h4>
+            <p style="margin:8px 0; opacity:0.9">На ваш первый заказ<br>через приложение!</p>
+            <span style="font-size:50px; position:absolute; right:15px; bottom:10px; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.2))">🍣</span>
         </div>
         <div class="promo-card dark">
-            <div class="promo-text">
-                <h4>Подарок!</h4>
-                <p>Ролл «Калифорния» при<br>заказе от 2000₽</p>
-            </div>
-            <span style="font-size: 50px; position:absolute; right:10px; bottom:10px; opacity:0.3;">🎁</span>
+            <h4 style="margin:0; font-size:22px">Комбо-Дни</h4>
+            <p style="margin:8px 0; opacity:0.7">Две «Калифорнии» по<br>цене одной!</p>
+            <span style="font-size:50px; position:absolute; right:15px; bottom:10px">🎁</span>
         </div>
     </div>
 
-    <h3 style="margin: 0 20px 15px; font-weight: 800;">Меню</h3>
+    <h3 style="margin:10px 20px 15px; font-weight:800; font-size:24px;">Выбирайте лучшее</h3>
     <div class="grid" id="grid"></div>
 </div>
 
@@ -53,22 +49,29 @@
 <div class="overlay" id="overlay" onclick="closeAll()"></div>
 
 <div id="details-sheet" class="sheet">
-    <div style="width: 40px; height: 5px; background: rgba(255,255,255,0.2); border-radius: 10px; margin: -10px auto 20px;"></div>
-    <img id="d-img" style="width:100%; border-radius:24px; height:240px; object-fit:cover;">
-    <div style="display:flex; justify-content:space-between; align-items: center; margin: 20px 0;">
-        <h2 id="d-title" style="margin:0;"></h2>
-        <span id="d-price-big" style="color:var(--accent); font-weight:800; font-size:24px;"></span>
+    <div style="width:40px; height:5px; background:rgba(255,255,255,0.2); border-radius:10px; margin: 0 auto 20px;"></div>
+    <img id="d-img" style="width:100%; border-radius:24px; max-height:280px; object-fit:cover;">
+    
+    <div style="display:flex; justify-content:space-between; align-items:center; margin:25px 0 10px;">
+        <h2 id="d-title" style="margin:0; font-size:28px; font-weight:800;"></h2>
+        <span id="d-price-big" style="color:var(--accent); font-weight:900; font-size:28px;"></span>
     </div>
-    <p id="d-desc" style="color:var(--gray); line-height:1.6; margin-bottom:25px;"></p>
+    
+    <div id="d-meta" style="color:var(--gray); font-size:15px; font-weight:600; margin-bottom:15px;"></div>
+    <p id="d-desc" style="color:#bbb; line-height:1.6; font-size:16px; margin:0; padding-bottom:10px;"></p>
+    
     <button class="btn-order" onclick="addToCart()">Добавить в корзину</button>
 </div>
 
 <div id="cart-sheet" class="sheet">
-    <div style="width: 40px; height: 5px; background: rgba(255,255,255,0.2); border-radius: 10px; margin: -10px auto 20px;"></div>
-    <h2 style="margin: 0 0 20px;">Корзина</h2>
-    <div id="cart-items" style="max-height: 250px; overflow-y: auto;"></div>
-    <input type="text" id="address" placeholder="Адрес доставки" style="width:100%; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); padding:16px; border-radius:18px; color:white; margin:15px 0; box-sizing:border-box;">
-    <button class="btn-order" onclick="sendOrder()">Заказать • <span id="total-val">0</span>₽</button>
+    <div style="width:40px; height:5px; background:rgba(255,255,255,0.2); border-radius:10px; margin: 0 auto 20px;"></div>
+    <h2 style="margin:0 0 20px; font-size:28px">Корзина</h2>
+    <div id="cart-items"></div>
+    
+    <div id="order-form" style="display:none; margin-top:20px;">
+        <input type="text" id="address" placeholder="Куда доставить?" style="width:100%; background:rgba(255,255,255,0.06); border:1px solid var(--glass-border); padding:20px; border-radius:20px; color:white; font-size:16px; box-sizing:border-box; outline:none;">
+        <button class="btn-order" onclick="sendOrder()">Заказать • <span id="total-val">0</span>₽</button>
+    </div>
 </div>
 
 <script>
@@ -80,9 +83,9 @@
     let currentCategory = 'all';
 
     const products = [
-        {id:1, cat:'rolls', name:"Филадельфия", price:890, meta:"280г", img:"https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=500", desc:"Премиальный лосось, сливочный сыр и авокадо."},
-        {id:2, cat:'rolls', name:"Калифорния", price:750, meta:"250г", img:"https://images.unsplash.com/photo-1559466273-d95e72debaf8?w=500", desc:"Краб, икра тобико и огурец."},
-        {id:4, cat:'sets', name:"Сет Якудза", price:4500, meta:"1.2кг", img:"https://images.unsplash.com/photo-1583623025817-d180a2221d0a?w=500", desc:"Огромный сет для большой компании."}
+        {id:1, cat:'rolls', name:"Филадельфия", price:890, meta:"280г • 8 шт", img:"https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=600", desc:"Наш бестселлер! Нежнейший лосось слабой соли, сливочный сыр и спелый авокадо в сочетании с рисом высшего сорта."},
+        {id:2, cat:'rolls', name:"Калифорния", price:750, meta:"250г • 8 шт", img:"https://images.unsplash.com/photo-1559466273-d95e72debaf8?w=600", desc:"Классика с изюминкой: снежный краб, фирменный японский майонез, свежий огурец и яркая икра тобико."},
+        {id:4, cat:'sets', name:"Сет Якудза", price:4500, meta:"1.2кг • 40 шт", img:"https://images.unsplash.com/photo-1583623025817-d180a2221d0a?w=600", desc:"Для тех, кто хочет всё и сразу! Включает Филадельфию, Калифорнию, два запеченных ролла и порцию гунканов."}
     ];
 
     function render() {
@@ -90,10 +93,10 @@
         grid.innerHTML = products.filter(p => currentCategory === 'all' || p.cat === currentCategory).map(p => `
             <div class="item" onclick="showItem(${p.id})">
                 <img src="${p.img}" class="item-img">
-                <div style="font-weight:700; font-size:15px;">${p.name}</div>
-                <div style="font-size:11px; color:var(--gray); margin: 4px 0 8px;">${p.meta}</div>
+                <div style="font-weight:700; font-size:16px;">${p.name}</div>
+                <div style="font-size:11px; color:var(--gray); margin: 6px 0 10px;">${p.meta}</div>
                 <div style="font-weight:800; color:var(--accent); display:flex; justify-content:space-between; align-items:center;">
-                    ${p.price} ₽ <div style="background:var(--accent); color:white; width:22px; height:22px; border-radius:8px; display:flex; align-items:center; justify-content:center;">+</div>
+                    ${p.price} ₽ <div style="background:var(--accent); color:white; width:24px; height:24px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px">+</div>
                 </div>
             </div>`).join('');
     }
@@ -102,11 +105,13 @@
         curProduct = products.find(p => p.id === id);
         document.getElementById('d-img').src = curProduct.img;
         document.getElementById('d-title').innerText = curProduct.name;
+        document.getElementById('d-meta').innerText = curProduct.meta;
         document.getElementById('d-desc').innerText = curProduct.desc;
         document.getElementById('d-price-big').innerText = curProduct.price + ' ₽';
+        
         document.getElementById('details-sheet').classList.add('active');
         document.getElementById('overlay').classList.add('active');
-        tg.HapticFeedback.impactOccurred('light');
+        tg.HapticFeedback.impactOccurred('medium');
     }
 
     function addToCart() {
@@ -120,15 +125,16 @@
         document.getElementById('c-count').innerText = cart.length;
         document.getElementById('c-count').style.display = cart.length > 0 ? 'flex' : 'none';
         document.getElementById('total-val').innerText = cart.reduce((s, i) => s + i.price, 0);
+        document.getElementById('order-form').style.display = cart.length > 0 ? 'block' : 'none';
     }
 
     function openCart() {
         const list = document.getElementById('cart-items');
-        list.innerHTML = cart.length === 0 ? '<p style="text-align:center;color:var(--gray)">Пусто</p>' : 
+        list.innerHTML = cart.length === 0 ? '<p style="text-align:center;color:var(--gray);padding:30px;">Корзина пуста. Время добавить роллы!</p>' : 
             cart.map((i, idx) => `
-            <div style="display:flex; justify-content:space-between; padding:12px; background:rgba(255,255,255,0.04); border-radius:15px; margin-bottom:8px;">
-                <div><b>${i.name}</b><br><small>${i.price} ₽</small></div>
-                <div style="color:var(--accent); font-weight:700;" onclick="cart.splice(${idx},1); updateCart(); openCart();">Удалить</div>
+            <div style="display:flex; justify-content:space-between; padding:16px; background:rgba(255,255,255,0.04); border-radius:20px; margin-bottom:10px; border:1px solid var(--glass-border)">
+                <div><b style="font-size:16px">${i.name}</b><br><small style="color:var(--gray)">${i.price} ₽</small></div>
+                <div style="color:var(--accent); font-weight:700; font-size:14px;" onclick="cart.splice(${idx},1); updateCart(); openCart();">Удалить</div>
             </div>`).join('');
         document.getElementById('cart-sheet').classList.add('active');
         document.getElementById('overlay').classList.add('active');
@@ -144,6 +150,7 @@
         document.querySelectorAll('.tab-item').forEach(i => i.classList.remove('active'));
         el.classList.add('active');
         render();
+        tg.HapticFeedback.impactOccurred('light');
     }
 
     if(tg.initDataUnsafe?.user?.photo_url) document.getElementById('u-avatar').src = tg.initDataUnsafe.user.photo_url;
