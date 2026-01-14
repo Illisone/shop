@@ -2,96 +2,283 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Quicksand:wght@500;700&display=swap');
+
         :root {
-            --bg: var(--tg-theme-bg-color, #ffffff);
-            --text: var(--tg-theme-text-color, #222);
-            --btn: var(--tg-theme-button-color, #2481cc);
-            --sec: var(--tg-theme-secondary-bg-color, #f4f4f5);
+            --bg: #1a1614;
+            --card: #25201d;
+            --accent: #d4a373; /* Цвет пенки латте */
+            --text: #fdfaf7;
+            --gray: #8b8178;
+            --tab-bg: rgba(37, 32, 29, 0.95);
         }
-        body { font-family: sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
-        
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .card { background: var(--sec); border-radius: 18px; padding: 10px; text-align: center; }
-        .card img { width: 100%; border-radius: 12px; }
-        
-        /* Модальное окно (Bottom Sheet) */
-        #modal {
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0; padding: 0;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        @keyframes bounceIn {
+            0% { opacity: 0; transform: scale(0.9); }
+            70% { opacity: 1; transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* Шапка */
+        .header {
+            padding: 25px 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            background: linear-gradient(to bottom, rgba(26,22,20,1), rgba(26,22,20,0));
+        }
+        .welcome { font-size: 14px; color: var(--gray); font-weight: 500; }
+        .user-name { font-size: 20px; font-weight: 800; font-family: 'Montserrat'; }
+        .avatar { width: 45px; height: 45px; border-radius: 15px; border: 2px solid var(--accent); object-fit: cover; }
+
+        .main-content { padding: 0 20px 150px; }
+
+        /* Поиск / Баннер */
+        .coffee-banner {
+            background: linear-gradient(135deg, #3d342f, #25201d);
+            border-radius: 30px; padding: 25px; margin-bottom: 30px;
+            position: relative; overflow: hidden;
+            border: 1px solid rgba(212, 163, 115, 0.1);
+        }
+        .coffee-banner h2 { margin: 0; font-size: 22px; font-family: 'Montserrat'; z-index: 2; position: relative; }
+        .coffee-banner .cup { position: absolute; right: -10px; bottom: -10px; font-size: 80px; opacity: 0.2; transform: rotate(-15deg); }
+
+        /* Сетка товаров */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .item {
+            background: var(--card); border-radius: 35px; padding: 15px;
+            text-align: center; border: 1px solid rgba(255,255,255,0.03);
+            animation: bounceIn 0.5s ease backwards;
+        }
+        .item-img-wrap { position: relative; width: 100%; aspect-ratio: 1/1; margin-bottom: 12px; }
+        .item-img { width: 100%; height: 100%; border-radius: 25px; object-fit: cover; }
+        .rating { 
+            position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px); padding: 4px 8px; border-radius: 10px; font-size: 10px; font-weight: 700;
+        }
+        .item-title { font-size: 16px; font-weight: 700; margin-bottom: 5px; font-family: 'Montserrat'; }
+        .item-price { color: var(--accent); font-weight: 800; font-size: 18px; }
+
+        /* Таб-бар */
+        .tab-bar {
+            position: fixed; bottom: 30px; left: 20px; right: 20px;
+            background: var(--tab-bg); border-radius: 25px; padding: 10px;
+            display: flex; justify-content: space-around;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05);
+            z-index: 1000;
+        }
+        .tab-item { font-size: 24px; opacity: 0.4; transition: 0.3s; padding: 10px; border-radius: 15px; }
+        .tab-item.active { opacity: 1; color: var(--accent); background: rgba(212, 163, 115, 0.1); }
+
+        /* Шторка кофе */
+        .sheet {
             position: fixed; bottom: -100%; left: 0; right: 0;
-            background: var(--bg); border-radius: 20px 20px 0 0;
-            padding: 20px; transition: 0.3s; z-index: 1000;
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+            background: #201b18; border-radius: 50px 50px 0 0;
+            padding: 30px; z-index: 2000; transition: 0.5s cubic-bezier(0.17, 0.89, 0.32, 1.2);
         }
-        #modal.active { bottom: 0; }
-        .overlay { 
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
-            background: rgba(0,0,0,0.5); display: none; z-index: 999;
+        .sheet.active { bottom: 0; }
+        .size-selector { display: flex; gap: 10px; margin: 20px 0; }
+        .size-btn { 
+            flex: 1; padding: 12px; border-radius: 15px; border: 1px solid var(--gray);
+            text-align: center; font-weight: 700; color: var(--gray);
         }
-        
-        input { 
-            width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; 
-            border: 1px solid #ddd; box-sizing: border-box; 
+        .size-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+        .btn-add {
+            width: 100%; background: var(--accent); color: #1a1614; border: none;
+            padding: 20px; border-radius: 20px; font-weight: 800; font-size: 18px; margin-top: 20px;
+            box-shadow: 0 10px 20px rgba(212, 163, 115, 0.2);
         }
+
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); display: none; z-index: 1500; }
     </style>
 </head>
 <body>
 
-<div class="grid" id="grid"></div>
+<div class="header">
+    <div>
+        <div class="welcome">Доброе утро,</div>
+        <div class="user-name" id="user-name">Кофеман</div>
+    </div>
+    <div style="display:flex; align-items:center; gap:15px;">
+        <div onclick="openCart()" style="position:relative">
+            <span style="font-size:28px">🛍️</span>
+            <div id="c-count" style="position:absolute; top:0; right:0; background:var(--accent); color:black; font-size:10px; width:18px; height:18px; border-radius:50%; display:none; align-items:center; justify-content:center; font-weight:800;">0</div>
+        </div>
+        <img id="u-avatar" class="avatar" src="https://via.placeholder.com/45">
+    </div>
+</div>
 
-<div class="overlay" id="overlay" onclick="closeModal()"></div>
-<div id="modal">
-    <h2 id="m-name"></h2>
-    <p id="m-desc"></p>
-    <input type="text" id="address" placeholder="Адрес доставки">
-    <input type="tel" id="phone" placeholder="Номер телефона">
-    <button class="add-btn" style="background:var(--btn); color:#fff; width:100%; border:none; padding:15px; border-radius:12px; font-weight:bold" onclick="finishOrder()">ПОДТВЕРДИТЬ</button>
+<div class="main-content">
+    <div class="coffee-banner">
+        <h2>Зарядись на максимум! ⚡</h2>
+        <p style="font-size:13px; color:var(--gray); margin-top:8px;">Вторая чашка капучино в подарок до 11:00</p>
+        <div class="cup">☕</div>
+    </div>
+
+    <div class="grid" id="grid"></div>
+</div>
+
+<div class="tab-bar">
+    <div class="tab-item active" onclick="switchTab('all', this)">🏠</div>
+    <div class="tab-item" onclick="switchTab('coffee', this)">☕</div>
+    <div class="tab-item" onclick="switchTab('dessert', this)">🍰</div>
+    <div class="tab-item" onclick="switchTab('beans', this)">🫘</div>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeAll()"></div>
+
+<div id="details-sheet" class="sheet">
+    <div style="width: 50px; height: 5px; background: #3d342f; border-radius: 10px; margin: -10px auto 25px;"></div>
+    <div style="display:flex; gap:20px;">
+        <img id="d-img" style="width:120px; height:120px; border-radius:25px; object-fit:cover;">
+        <div>
+            <h2 id="d-title" style="margin:0; font-family:'Montserrat';"></h2>
+            <p id="d-price" style="font-size:24px; color:var(--accent); font-weight:800; margin:10px 0;"></p>
+        </div>
+    </div>
+    
+    <p style="font-weight:700; margin-top:25px;">ВЫБЕРИТЕ РАЗМЕР</p>
+    <div class="size-selector">
+        <div class="size-btn" onclick="setSize('S', this)">S</div>
+        <div class="size-btn active" onclick="setSize('M', this)">M</div>
+        <div class="size-btn" onclick="setSize('L', this)">L</div>
+    </div>
+
+    <p id="d-desc" style="color:var(--gray); font-size:14px; line-height:1.5;"></p>
+    
+    <button class="btn-add" onclick="addToCart()">Добавить в корзину</button>
+</div>
+
+<div id="cart-sheet" class="sheet">
+    <h2 style="font-family:'Montserrat';">Ваш поднос</h2>
+    <div id="cart-items" style="max-height: 250px; overflow-y: auto;"></div>
+    <div style="margin-top:20px; border-top: 1px solid #3d342f; padding-top:20px;">
+        <div style="display:flex; justify-content:space-between; font-size:20px; font-weight:800;">
+            <span>Итого:</span>
+            <span id="total-val">0</span><span>₽</span>
+        </div>
+        <button class="btn-add" onclick="sendOrder()">ОПЛАТИТЬ ЧЕРЕЗ BOT</button>
+    </div>
 </div>
 
 <script>
     let tg = window.Telegram.WebApp;
-    let currentItem = null;
-    const items = [
-        { name: "Капучино", price: 290, desc: "Мягкий кофе с пенкой из цельного молока.", img: "☕" },
-        { name: "Пончик", price: 150, desc: "Свежайший пончик в шоколадной глазури.", img: "🍩" }
+    tg.expand();
+    tg.setHeaderColor('#1a1614');
+
+    let cart = [];
+    let curProduct = null;
+    let selectedSize = 'M';
+
+    const products = [
+        {id:1, cat:'coffee', name:"Капучино", price:250, img:"https://images.unsplash.com/photo-1534778101976-62847782c213?w=500", desc:"Классический кофейный напиток на основе эспрессо с добавлением вспененного молока."},
+        {id:2, cat:'coffee', name:"Флэт Уайт", price:280, img:"https://images.unsplash.com/photo-1577968897866-be50259584ce?w=500", desc:"Более насыщенный кофейный вкус с тонким слоем молочной пены."},
+        {id:3, cat:'dessert', name:"Круассан", price:190, img:"https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=500", desc:"Хрустящий классический круассан на сливочном масле."},
+        {id:4, cat:'coffee', name:"Раф Кофе", price:320, img:"https://images.unsplash.com/photo-1541167760496-1628856ab772?w=500", desc:"Десертный кофе со сливками и ванильным сахаром."},
     ];
 
-    const grid = document.getElementById('grid');
-    items.forEach(item => {
-        grid.innerHTML += `
-            <div class="card" onclick="openModal('${item.name}')">
-                <div style="font-size:40px">${item.img}</div>
-                <h3>${item.name}</h3>
-                <p style="color:var(--btn)">${item.price} ₽</p>
-            </div>`;
-    });
+    function render(cat = 'all') {
+        const grid = document.getElementById('grid');
+        grid.innerHTML = products
+            .filter(p => cat === 'all' || p.cat === cat)
+            .map((p, idx) => `
+                <div class="item" style="animation-delay: ${idx*0.1}s" onclick="showItem(${p.id})">
+                    <div class="item-img-wrap">
+                        <img src="${p.img}" class="item-img">
+                        <div class="rating">⭐️ 4.9</div>
+                    </div>
+                    <div class="item-title">${p.name}</div>
+                    <div class="item-price">${p.price} ₽</div>
+                </div>
+            `).join('');
+    }
 
-    function openModal(name) {
-        currentItem = items.find(i => i.name === name);
-        document.getElementById('m-name').innerText = currentItem.name;
-        document.getElementById('m-desc').innerText = currentItem.desc;
-        document.getElementById('modal').classList.add('active');
+    function switchTab(cat, el) {
+        document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+        el.classList.add('active');
+        render(cat);
+        tg.HapticFeedback.impactOccurred('medium');
+    }
+
+    function showItem(id) {
+        curProduct = products.find(p => p.id === id);
+        document.getElementById('d-img').src = curProduct.img;
+        document.getElementById('d-title').innerText = curProduct.name;
+        document.getElementById('d-desc').innerText = curProduct.desc;
+        document.getElementById('d-price').innerText = curProduct.price + ' ₽';
+        document.getElementById('details-sheet').classList.add('active');
         document.getElementById('overlay').style.display = 'block';
     }
 
-    function closeModal() {
-        document.getElementById('modal').classList.remove('active');
+    function setSize(size, el) {
+        selectedSize = size;
+        document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+        el.classList.add('active');
+        tg.HapticFeedback.selectionChanged();
+    }
+
+    function addToCart() {
+        cart.push({...curProduct, size: selectedSize});
+        updateUI();
+        closeAll();
+        tg.HapticFeedback.notificationOccurred('success');
+    }
+
+    function updateUI() {
+        document.getElementById('c-count').innerText = cart.length;
+        document.getElementById('c-count').style.display = cart.length > 0 ? 'flex' : 'none';
+        document.getElementById('total-val').innerText = cart.reduce((s,i) => s + i.price, 0);
+    }
+
+    function openCart() {
+        const list = document.getElementById('cart-items');
+        list.innerHTML = cart.map((i, idx) => `
+            <div style="display:flex; justify-content:space-between; padding:15px 0; border-bottom:1px solid #3d342f;">
+                <div>
+                    <b>${i.name} (${i.size})</b><br>
+                    <small style="color:var(--gray)">Заказ №${100+idx}</small>
+                </div>
+                <b onclick="removeFromCart(${idx})" style="color:var(--accent)">${i.price}₽</b>
+            </div>
+        `).join('');
+        document.getElementById('cart-sheet').classList.add('active');
+        document.getElementById('overlay').style.display = 'block';
+    }
+
+    function removeFromCart(idx) {
+        cart.splice(idx, 1);
+        updateUI();
+        openCart();
+        tg.HapticFeedback.impactOccurred('light');
+    }
+
+    function closeAll() {
+        document.querySelectorAll('.sheet').forEach(s => s.classList.remove('active'));
         document.getElementById('overlay').style.display = 'none';
     }
 
-    function finishOrder() {
-        const addr = document.getElementById('address').value;
-        const ph = document.getElementById('phone').value;
-        if(!addr || !ph) return alert("Заполните данные!");
-        
-        tg.sendData(JSON.stringify({
-            items: [{name: currentItem.name, price: currentItem.price}],
-            total: currentItem.price,
-            address: addr,
-            phone: ph
-        }));
+    function sendOrder() {
+        if(cart.length === 0) return;
+        tg.sendData(JSON.stringify({order: cart, total: document.getElementById('total-val').innerText}));
     }
+
+    if(tg.initDataUnsafe?.user) {
+        document.getElementById('user-name').innerText = tg.initDataUnsafe.user.first_name;
+        if(tg.initDataUnsafe.user.photo_url) document.getElementById('u-avatar').src = tg.initDataUnsafe.user.photo_url;
+    }
+
+    render();
 </script>
 </body>
 </html>
