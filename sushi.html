@@ -6,197 +6,184 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --bg: #111111;
-            --card-bg: #1a1a1a;
-            --accent: #ff3b30; /* Красный неон */
+            --bg: #0b0b0d;
+            --card-bg: #151518;
+            --accent: #ff3b30;
             --text: #ffffff;
             --glass: rgba(255, 255, 255, 0.05);
         }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', -apple-system, sans-serif;
             background: var(--bg);
             color: var(--text);
-            margin: 0;
-            padding: 15px;
-            padding-bottom: 120px; /* Место под кнопку */
+            margin: 0; padding: 15px;
+            padding-bottom: 120px;
         }
 
-        /* Заголовок с логотипом */
-        .logo-area {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 30px;
-            padding: 10px;
+        /* Шапка с профилем */
+        .header-profile {
+            display: flex; align-items: center; gap: 12px;
+            margin-bottom: 25px; padding: 5px;
         }
-        .logo-circle {
-            width: 50px;
-            height: 50px;
-            border: 2px solid var(--accent);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 0 15px var(--accent);
-        }
+        .user-avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--accent); }
 
-        /* Категории (как на скрине) */
-        .cats {
-            display: flex;
-            gap: 10px;
-            overflow-x: auto;
-            margin-bottom: 25px;
-            scrollbar-width: none;
+        /* Категории */
+        .categories {
+            display: flex; overflow-x: auto; gap: 10px;
+            margin-bottom: 25px; scrollbar-width: none;
         }
-        .cat-item {
-            background: var(--card-bg);
-            padding: 8px 16px;
-            border-radius: 12px;
-            white-space: nowrap;
-            font-size: 14px;
-            border: 1px solid transparent;
+        .categories::-webkit-scrollbar { display: none; }
+        .cat-btn {
+            background: var(--card-bg); border: 1px solid var(--glass);
+            color: white; padding: 10px 20px; border-radius: 100px;
+            white-space: nowrap; font-size: 14px; font-weight: 600;
         }
-        .cat-item.active {
-            background: rgba(255, 59, 48, 0.15);
-            border-color: var(--accent);
-            color: var(--accent);
-        }
+        .cat-btn.active { background: var(--accent); border-color: var(--accent); }
 
-        /* Сетка товаров */
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
+        /* Сетка */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .card {
-            background: var(--card-bg);
-            border-radius: 20px;
-            padding: 12px;
-            text-align: center;
-            border: 1px solid rgba(255,255,255,0.05);
-            transition: 0.3s;
+            background: var(--card-bg); border-radius: 24px; padding: 12px;
+            border: 1px solid rgba(255,255,255,0.03); position: relative;
         }
-        .card:active { transform: scale(0.95); }
-        .card img {
-            width: 100%;
-            border-radius: 15px;
-            margin-bottom: 10px;
-            filter: drop-shadow(0 0 10px rgba(255,59,48,0.2));
-        }
-        .price {
-            color: var(--accent);
-            font-weight: 800;
-            font-size: 18px;
-            margin: 8px 0;
+        .card img { width: 100%; border-radius: 18px; }
+        .price { color: var(--accent); font-weight: 800; font-size: 18px; margin-top: 5px; }
+        
+        .add-badge {
+            background: var(--accent); color: white; border-radius: 10px;
+            padding: 4px 8px; font-size: 12px; font-weight: bold;
+            position: absolute; top: 18px; right: 18px;
         }
 
-        /* Модальное окно (Glassmorphism) */
+        /* Модалка */
         #modal {
-            position: fixed;
-            bottom: -100%; left: 0; right: 0;
-            background: rgba(30, 30, 30, 0.8);
-            backdrop-filter: blur(20px);
-            border-radius: 30px 30px 0 0;
-            padding: 25px;
-            z-index: 1000;
-            transition: 0.4s;
+            position: fixed; bottom: -100%; left: 0; right: 0;
+            background: rgba(20, 20, 23, 0.98); backdrop-filter: blur(20px);
+            border-radius: 30px 30px 0 0; padding: 25px; z-index: 1000;
+            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             border-top: 1px solid rgba(255,255,255,0.1);
         }
         #modal.active { bottom: 0; }
-        .overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.6); display: none; z-index: 999;
-        }
+        .overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: none; z-index: 999; }
 
-        /* Поля ввода */
         input {
-            width: 100%;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            padding: 15px;
-            border-radius: 15px;
-            color: white;
-            margin-bottom: 10px;
-            box-sizing: border-box;
+            width: 100%; background: #222; border: 1px solid #333;
+            padding: 16px; border-radius: 14px; color: white;
+            margin-top: 10px; box-sizing: border-box; font-size: 16px;
         }
 
-        /* Главная кнопка в стиле скрина */
-        .main-btn {
-            position: fixed;
-            bottom: 20px; left: 20px; right: 20px;
-            background: linear-gradient(90deg, #ff3b30, #ff7b30);
-            border: none;
-            border-radius: 18px;
-            padding: 18px;
-            color: white;
-            font-weight: 800;
-            font-size: 16px;
-            text-transform: uppercase;
-            box-shadow: 0 10px 20px rgba(255, 59, 48, 0.3);
-            z-index: 1001;
+        /* Кнопка заказа */
+        .cart-btn {
+            position: fixed; bottom: 25px; left: 15px; right: 15px;
+            background: linear-gradient(90deg, #ff3b30, #ff6b30);
+            border: none; border-radius: 20px; padding: 20px;
+            color: white; font-weight: 800; display: none;
+            justify-content: space-between; z-index: 1001;
+            box-shadow: 0 10px 30px rgba(255, 59, 48, 0.3);
         }
     </style>
 </head>
 <body>
 
-<div class="logo-area">
-    <div class="logo-circle">Y</div>
+<div class="header-profile">
+    <img id="avatar" class="user-avatar" src="https://via.placeholder.com/45">
     <div>
-        <div style="font-weight: 800; font-size: 20px;">Yakuya Sushi</div>
-        <div style="font-size: 12px; color: #888;">Premium Japanese Cuisine</div>
+        <div id="u-name" style="font-weight: 800;">Гость</div>
+        <div style="font-size: 12px; color: #888;">Сегодня отличный день для суши!</div>
     </div>
 </div>
 
-<div class="cats">
-    <div class="cat-item active">🍣 Роллы</div>
-    <div class="cat-item">🍱 Сеты</div>
-    <div class="cat-item">🍙 Суши</div>
-    <div class="cat-item">🔥 Горячее</div>
+<div class="categories" id="cats">
+    <button class="cat-btn active" onclick="filter('all')">Все</button>
+    <button class="cat-btn" onclick="filter('rolls')">🍣 Роллы</button>
+    <button class="cat-btn" onclick="filter('sets')">🍱 Сеты</button>
+    <button class="cat-btn" onclick="filter('drinks')">🍹 Напитки</button>
 </div>
 
-<div class="grid">
-    <div class="card" onclick="selectItem('Сет Филадельфия', 1200, 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=300')">
-        <img src="https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=300" alt="roll">
-        <div style="font-size: 14px; font-weight: 600;">Сет Филадельфия</div>
-        <div class="price">1200 ₽</div>
-    </div>
-    <div class="card" onclick="selectItem('Ролл Дракон', 850, 'https://images.unsplash.com/photo-1559466273-d95e72debaf8?w=300')">
-        <img src="https://images.unsplash.com/photo-1559466273-d95e72debaf8?w=300" alt="roll">
-        <div style="font-size: 14px; font-weight: 600;">Ролл Дракон</div>
-        <div class="price">850 ₽</div>
-    </div>
-</div>
-
-<button class="main-btn" id="checkout-btn" style="display: none;" onclick="openModal()">
-    Оформить заказ (<span id="total-price">0</span> ₽)
-</button>
+<div class="grid" id="grid"></div>
 
 <div class="overlay" id="overlay" onclick="closeModal()"></div>
 <div id="modal">
-    <h3 id="modal-title" style="margin-top:0">Оформление</h3>
-    <input type="text" id="address" placeholder="Адрес доставки">
-    <input type="tel" id="phone" placeholder="Ваш телефон">
-    <button class="main-btn" style="position: static; width: 100%;" onclick="sendToBot()">Подтвердить заказ</button>
+    <div id="modal-content">
+        <img id="m-img" style="width:100%; border-radius:20px; margin-bottom:15px;">
+        <h2 id="m-title" style="margin:0"></h2>
+        <p id="m-desc" style="color:#888; margin: 15px 0; line-height:1.5;"></p>
+        <button class="cat-btn active" style="width:100%; padding:15px;" onclick="addToCart()">Добавить в корзину</button>
+    </div>
+    <div id="form" style="display:none">
+        <h2>Доставка</h2>
+        <input type="text" id="addr" placeholder="Адрес">
+        <input type="tel" id="tel" placeholder="Телефон">
+        <button class="cat-btn active" style="width:100%; padding:15px; margin-top:15px;" onclick="confirmOrder()">Подтвердить заказ</button>
+    </div>
 </div>
+
+<button class="cart-btn" id="cart" onclick="openForm()">
+    <span>ОФОРМИТЬ ЗАКАЗ</span>
+    <span id="total-val">0 ₽</span>
+</button>
 
 <script>
     let tg = window.Telegram.WebApp;
     let cart = [];
-    let totalPrice = 0;
+    let cur = null;
+    
+    const products = [
+        {id:1, cat:'rolls', name:"Филадельфия", price:890, desc:"Классический ролл с нежным лососем и сливочным сыром.", img:"https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=400"},
+        {id:2, cat:'rolls', name:"Калифорния", price:750, desc:"Снежный краб, авокадо и икра тобико.", img:"https://images.unsplash.com/photo-1559466273-d95e72debaf8?w=400"},
+        {id:3, cat:'sets', name:"Сет Самурай", price:2500, desc:"Большой набор для компании из 32 роллов.", img:"https://images.unsplash.com/photo-1583623025817-d180a2221d0a?w=400"},
+        {id:4, cat:'drinks', name:"Матча Латте", price:350, desc:"Традиционный японский чай с молоком.", img:"https://images.unsplash.com/photo-1536496070141-8440ae99de43?w=400"}
+    ];
 
     tg.expand();
-    tg.headerColor = '#111111';
+    if(tg.initDataUnsafe?.user) {
+        document.getElementById('u-name').innerText = tg.initDataUnsafe.user.first_name;
+        if(tg.initDataUnsafe.user.photo_url) document.getElementById('avatar').src = tg.initDataUnsafe.user.photo_url;
+    }
 
-    function selectItem(name, price, img) {
-        cart = [{name, price}]; // Для демо берем один товар
-        totalPrice = price;
-        document.getElementById('total-price').innerText = totalPrice;
-        document.getElementById('checkout-btn').style.display = 'block';
+    function render(c = 'all') {
+        const g = document.getElementById('grid');
+        g.innerHTML = '';
+        products.filter(p => c === 'all' || p.cat === c).forEach(p => {
+            g.innerHTML += `<div class="card" onclick="openDetails(${p.id})">
+                <img src="${p.img}">
+                <div style="font-weight:600; margin-top:10px;">${p.name}</div>
+                <div class="price">${p.price} ₽</div>
+            </div>`;
+        });
+    }
+
+    function filter(c) {
+        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+        event.target.classList.add('active');
+        render(c);
+    }
+
+    function openDetails(id) {
+        cur = products.find(p => p.id === id);
+        document.getElementById('m-img').src = cur.img;
+        document.getElementById('m-title').innerText = cur.name;
+        document.getElementById('m-desc').innerText = cur.desc;
+        document.getElementById('modal-content').style.display = 'block';
+        document.getElementById('form').style.display = 'none';
+        document.getElementById('modal').classList.add('active');
+        document.getElementById('overlay').style.display = 'block';
         tg.HapticFeedback.impactOccurred('medium');
     }
 
-    function openModal() {
+    function addToCart() {
+        cart.push(cur);
+        const total = cart.reduce((s, p) => s + p.price, 0);
+        document.getElementById('total-val').innerText = total + ' ₽';
+        document.getElementById('cart').style.display = 'flex';
+        closeModal();
+        tg.HapticFeedback.notificationOccurred('success');
+    }
+
+    function openForm() {
+        document.getElementById('modal-content').style.display = 'none';
+        document.getElementById('form').style.display = 'block';
         document.getElementById('modal').classList.add('active');
         document.getElementById('overlay').style.display = 'block';
     }
@@ -206,18 +193,14 @@
         document.getElementById('overlay').style.display = 'none';
     }
 
-    function sendToBot() {
-        const addr = document.getElementById('address').value;
-        const phone = document.getElementById('phone').value;
-        if(!addr || !phone) return alert("Заполните данные!");
-
-        tg.sendData(JSON.stringify({
-            items: cart,
-            total: totalPrice,
-            address: addr,
-            phone: phone
-        }));
+    function confirmOrder() {
+        const a = document.getElementById('addr').value;
+        const t = document.getElementById('tel').value;
+        if(!a || !t) return tg.showAlert("Заполните данные!");
+        tg.sendData(JSON.stringify({items: cart, total: cart.reduce((s, p) => s + p.price, 0), address: a, phone: t}));
     }
+
+    render();
 </script>
 </body>
 </html>
