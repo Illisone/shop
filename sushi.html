@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg: #141414; /* Глубокий черный */
+            --card-bg: #1c1c1e;
+            --text: #ffffff;
+            --accent: #ff4757; /* Ярко-красный для суши */
+            --hint: #8e8e93;
+        }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
+        .header { text-align: center; margin-bottom: 25px; }
+        .header h1 { color: var(--accent); margin: 0; font-size: 26px; }
+        
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .card { 
+            background: var(--card-bg); border-radius: 20px; padding: 12px; 
+            text-align: center; border: 1px solid #2c2c2e;
+            transition: transform 0.2s;
+        }
+        .card:active { transform: scale(0.96); }
+        .item-img { font-size: 45px; margin-bottom: 10px; }
+        .item-name { font-weight: 600; margin-bottom: 5px; height: 40px; }
+        .item-price { color: var(--accent); font-weight: bold; font-size: 18px; margin-bottom: 10px; }
+        
+        .add-btn { 
+            background: var(--accent); color: white; border: none; 
+            border-radius: 12px; padding: 10px; width: 100%; font-weight: bold;
+        }
+
+        /* Форма заказа */
+        #modal {
+            position: fixed; bottom: -100%; left: 0; right: 0;
+            background: var(--card-bg); border-radius: 25px 25px 0 0;
+            padding: 25px; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1000;
+        }
+        #modal.active { bottom: 0; }
+        .overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: none; z-index: 999; }
+        input { 
+            width: 100%; padding: 14px; margin: 8px 0; border-radius: 12px; 
+            border: 1px solid #3a3a3c; background: #2c2c2e; color: white; box-sizing: border-box; 
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>Yakuza Sushi 🍣</h1>
+    <p style="color: var(--hint)">Премиальное качество</p>
+</div>
+
+<div class="grid">
+    <div class="card" onclick="openModal('Сет Филадельфия', 1200, 'Классический ролл с лососем и сливочным сыром.')">
+        <div class="item-img">🍱</div>
+        <div class="item-name">Сет Филадельфия</div>
+        <div class="item-price">1200 ₽</div>
+        <button class="add-btn">Заказать</button>
+    </div>
+    <div class="card" onclick="openModal('Ролл Дракон', 850, 'Угорь, авокадо и соус унаги.')">
+        <div class="item-img">🐍</div>
+        <div class="item-name">Ролл Дракон</div>
+        <div class="item-price">850 ₽</div>
+        <button class="add-btn">Заказать</button>
+    </div>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeModal()"></div>
+<div id="modal">
+    <h2 id="m-name" style="margin-top:0"></h2>
+    <p id="m-desc" style="color: var(--hint)"></p>
+    <input type="text" id="address" placeholder="Ваш адрес">
+    <input type="tel" id="phone" placeholder="Телефон для связи">
+    <button class="add-btn" style="margin-top:15px; padding: 18px;" onclick="sendOrder()">ПОДТВЕРДИТЬ ЗАКАЗ</button>
+</div>
+
+<script>
+    let tg = window.Telegram.WebApp;
+    let currentItem = {};
+    tg.expand();
+
+    function openModal(name, price, desc) {
+        currentItem = {name, price};
+        document.getElementById('m-name').innerText = name;
+        document.getElementById('m-desc').innerText = desc;
+        document.getElementById('modal').classList.add('active');
+        document.getElementById('overlay').style.display = 'block';
+        tg.HapticFeedback.impactOccurred('medium');
+    }
+
+    function closeModal() {
+        document.getElementById('modal').classList.remove('active');
+        document.getElementById('overlay').style.display = 'none';
+    }
+
+    function sendOrder() {
+        const addr = document.getElementById('address').value;
+        const ph = document.getElementById('phone').value;
+        if(!addr || !ph) return alert("Введите данные!");
+        
+        tg.sendData(JSON.stringify({
+            items: [currentItem],
+            total: currentItem.price,
+            address: addr,
+            phone: ph
+        }));
+    }
+</script>
+</body>
+</html>

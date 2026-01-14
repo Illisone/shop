@@ -8,106 +8,90 @@
         :root {
             --bg: var(--tg-theme-bg-color, #ffffff);
             --text: var(--tg-theme-text-color, #222);
-            --hint: var(--tg-theme-hint-color, #999);
             --btn: var(--tg-theme-button-color, #2481cc);
-            --btn-text: var(--tg-theme-button-text-color, #fff);
-            --sec-bg: var(--tg-theme-secondary-bg-color, #f4f4f5);
+            --sec: var(--tg-theme-secondary-bg-color, #f4f4f5);
         }
-        body { font-family: -apple-system, system-ui; background: var(--bg); color: var(--text); margin: 0; padding: 0; }
+        body { font-family: sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
         
-        /* Горизонтальные категории */
-        .categories {
-            display: flex; overflow-x: auto; padding: 15px;
-            gap: 10px; position: sticky; top: 0; background: var(--bg); z-index: 10;
-        }
-        .categories::-webkit-scrollbar { display: none; }
-        .cat-btn {
-            background: var(--sec-bg); border: none; padding: 8px 20px;
-            border-radius: 20px; color: var(--text); white-space: nowrap;
-            font-weight: 600; font-size: 14px; cursor: pointer;
-        }
-        .cat-btn.active { background: var(--btn); color: var(--btn-text); }
-
-        /* Сетка товаров */
-        .products { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 15px 100px; }
-        .item-card {
-            background: var(--sec-bg); border-radius: 20px; padding: 12px;
-            display: flex; flex-direction: column; animation: fadeIn 0.3s ease;
-        }
-        .item-img {
-            width: 100%; aspect-ratio: 1/1; background: #ddd; 
-            border-radius: 15px; margin-bottom: 10px;
-            display: flex; align-items: center; justify-content: center; font-size: 40px;
-        }
-        .item-name { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
-        .item-price { color: var(--btn); font-weight: 800; margin-bottom: 12px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .card { background: var(--sec); border-radius: 18px; padding: 10px; text-align: center; }
+        .card img { width: 100%; border-radius: 12px; }
         
-        .add-btn {
-            background: var(--btn); color: var(--btn-text); border: none;
-            border-radius: 12px; padding: 10px; font-weight: bold; width: 100%;
+        /* Модальное окно (Bottom Sheet) */
+        #modal {
+            position: fixed; bottom: -100%; left: 0; right: 0;
+            background: var(--bg); border-radius: 20px 20px 0 0;
+            padding: 20px; transition: 0.3s; z-index: 1000;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
         }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        #modal.active { bottom: 0; }
+        .overlay { 
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
+            background: rgba(0,0,0,0.5); display: none; z-index: 999;
+        }
+        
+        input { 
+            width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; 
+            border: 1px solid #ddd; box-sizing: border-box; 
+        }
     </style>
 </head>
 <body>
 
-<div class="categories" id="cat-list">
-    <button class="cat-btn active" onclick="filter('all')">Всё</button>
-    <button class="cat-btn" onclick="filter('coffee')">☕ Кофе</button>
-    <button class="cat-btn" onclick="filter('donuts')">🍩 Пончики</button>
-    <button class="cat-btn" onclick="filter('drinks')">🥤 Напитки</button>
-</div>
+<div class="grid" id="grid"></div>
 
-<div class="products" id="product-grid">
-    </div>
+<div class="overlay" id="overlay" onclick="closeModal()"></div>
+<div id="modal">
+    <h2 id="m-name"></h2>
+    <p id="m-desc"></p>
+    <input type="text" id="address" placeholder="Адрес доставки">
+    <input type="tel" id="phone" placeholder="Номер телефона">
+    <button class="add-btn" style="background:var(--btn); color:#fff; width:100%; border:none; padding:15px; border-radius:12px; font-weight:bold" onclick="finishOrder()">ПОДТВЕРДИТЬ</button>
+</div>
 
 <script>
     let tg = window.Telegram.WebApp;
-    let cart = [];
+    let currentItem = null;
     const items = [
-        { id: 1, cat: 'coffee', name: 'Капучино', price: 290, img: '☕' },
-        { id: 2, cat: 'donuts', name: 'Шоко-Пончик', price: 150, img: '🍩' },
-        { id: 3, cat: 'drinks', name: 'Лимонад', price: 220, img: '🍹' },
-        { id: 4, cat: 'coffee', name: 'Эспрессо', price: 180, img: '☕' },
-        { id: 5, cat: 'donuts', name: 'Ягодный', price: 160, img: '🧁' },
-        { id: 6, cat: 'drinks', name: 'Матча', price: 350, img: '🍵' },
+        { name: "Капучино", price: 290, desc: "Мягкий кофе с пенкой из цельного молока.", img: "☕" },
+        { name: "Пончик", price: 150, desc: "Свежайший пончик в шоколадной глазури.", img: "🍩" }
     ];
 
-    function render(filterCat = 'all') {
-        const grid = document.getElementById('product-grid');
-        grid.innerHTML = '';
-        const filtered = filterCat === 'all' ? items : items.filter(i => i.cat === filterCat);
-        
-        filtered.forEach(item => {
-            grid.innerHTML += `
-                <div class="item-card">
-                    <div class="item-img">${item.img}</div>
-                    <div class="item-name">${item.name}</div>
-                    <div class="item-price">${item.price} ₽</div>
-                    <button class="add-btn" onclick="addToCart('${item.name}', ${item.price})">Добавить</button>
-                </div>`;
-        });
-    }
-
-    function filter(cat) {
-        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-        event.target.classList.add('active');
-        render(cat);
-    }
-
-    function addToCart(name, price) {
-        cart.push({name, price});
-        tg.HapticFeedback.impactOccurred('light');
-        tg.MainButton.setText(`ОФОРМИТЬ (${cart.reduce((s, i) => s + i.price, 0)} ₽)`);
-        tg.MainButton.show();
-    }
-
-    tg.onEvent('mainButtonClicked', () => {
-        tg.sendData(JSON.stringify({items: cart, total: cart.reduce((s, i) => s + i.price, 0)}));
+    const grid = document.getElementById('grid');
+    items.forEach(item => {
+        grid.innerHTML += `
+            <div class="card" onclick="openModal('${item.name}')">
+                <div style="font-size:40px">${item.img}</div>
+                <h3>${item.name}</h3>
+                <p style="color:var(--btn)">${item.price} ₽</p>
+            </div>`;
     });
 
-    render();
+    function openModal(name) {
+        currentItem = items.find(i => i.name === name);
+        document.getElementById('m-name').innerText = currentItem.name;
+        document.getElementById('m-desc').innerText = currentItem.desc;
+        document.getElementById('modal').classList.add('active');
+        document.getElementById('overlay').style.display = 'block';
+    }
+
+    function closeModal() {
+        document.getElementById('modal').classList.remove('active');
+        document.getElementById('overlay').style.display = 'none';
+    }
+
+    function finishOrder() {
+        const addr = document.getElementById('address').value;
+        const ph = document.getElementById('phone').value;
+        if(!addr || !ph) return alert("Заполните данные!");
+        
+        tg.sendData(JSON.stringify({
+            items: [{name: currentItem.name, price: currentItem.price}],
+            total: currentItem.price,
+            address: addr,
+            phone: ph
+        }));
+    }
 </script>
 </body>
 </html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg: #fffcfc;
+            --text: #4a4a4a;
+            --accent: #d4a5a5; /* Пыльная роза */
+            --sec: #f9f3f3;
+        }
+        body { font-family: 'Segoe UI', serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
+        .header { text-align: center; margin: 20px 0; }
+        .header h1 { font-weight: 300; letter-spacing: 2px; text-transform: uppercase; }
+        
+        .grid { display: flex; flex-direction: column; gap: 20px; }
+        .card { 
+            background: var(--sec); border-radius: 0; border-bottom: 2px solid var(--accent);
+            padding: 20px; display: flex; align-items: center; justify-content: space-between;
+        }
+        .item-info { text-align: left; }
+        .item-price { font-style: italic; color: var(--accent); font-size: 20px; }
+        
+        .add-btn { 
+            background: transparent; border: 1px solid var(--accent); 
+            color: var(--accent); padding: 10px 20px; text-transform: uppercase;
+            letter-spacing: 1px; font-size: 12px;
+        }
+
+        #modal {
+            position: fixed; bottom: -100%; left: 0; right: 0;
+            background: white; padding: 30px; transition: 0.5s; z-index: 1000;
+            border-top: 3px solid var(--accent);
+        }
+        #modal.active { bottom: 0; }
+        .overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.8); display: none; z-index: 999; }
+        input { width: 100%; padding: 15px; margin: 10px 0; border: none; background: var(--sec); border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>Flora Design 🌸</h1>
+    <p>Доставка нежности</p>
+</div>
+
+<div class="grid">
+    <div class="card" onclick="openModal('Букет Пионов', 3500, '15 нежных розовых пионов.')">
+        <div class="item-info">
+            <div style="font-size:18px; margin-bottom:5px">Букет Пионов</div>
+            <div class="item-price">3500 ₽</div>
+        </div>
+        <button class="add-btn">Выбрать</button>
+    </div>
+    <div class="card" onclick="openModal('Белые Лилии', 2800, 'Элегантный букет из 7 лилий.')">
+        <div class="item-info">
+            <div style="font-size:18px; margin-bottom:5px">Белые Лилии</div>
+            <div class="item-price">2800 ₽</div>
+        </div>
+        <button class="add-btn">Выбрать</button>
+    </div>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeModal()"></div>
+<div id="modal">
+    <h2 id="m-name" style="font-weight: 300"></h2>
+    <p id="m-desc"></p>
+    <input type="text" id="address" placeholder="Адрес получателя">
+    <input type="tel" id="phone" placeholder="Ваш телефон">
+    <button style="background: var(--accent); color: white; border: none; width: 100%; padding: 20px; margin-top: 10px;" onclick="sendOrder()">ОФОРМИТЬ ДОСТАВКУ</button>
+</div>
+
+<script>
+    let tg = window.Telegram.WebApp;
+    let currentItem = {};
+    tg.expand();
+
+    function openModal(name, price, desc) {
+        currentItem = {name, price};
+        document.getElementById('m-name').innerText = name;
+        document.getElementById('m-desc').innerText = desc;
+        document.getElementById('modal').classList.add('active');
+        document.getElementById('overlay').style.display = 'block';
+    }
+
+    function closeModal() {
+        document.getElementById('modal').classList.remove('active');
+        document.getElementById('overlay').style.display = 'none';
+    }
+
+    function sendOrder() {
+        const addr = document.getElementById('address').value;
+        const ph = document.getElementById('phone').value;
+        if(!addr || !ph) return alert("Пожалуйста, заполните поля.");
+        
+        tg.sendData(JSON.stringify({
+            items: [currentItem],
+            total: currentItem.price,
+            address: addr,
+            phone: ph
+        }));
+    }
+</script>
+</body>
+</html>
