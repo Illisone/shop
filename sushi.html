@@ -5,218 +5,260 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
 
         :root {
             --bg: #000000;
-            --card-bg: #121214;
-            --accent: #E31E24;
+            --card: #111112;
+            --accent: #FF2D55; /* Сочный малиново-красный */
             --text: #ffffff;
-            --secondary: #8E8E93;
-            --glass: rgba(255, 255, 255, 0.04);
+            --gray: #8E8E93;
+            --glass: rgba(255, 255, 255, 0.06);
         }
 
         body {
             font-family: 'Inter', sans-serif;
             background: var(--bg);
             color: var(--text);
-            margin: 0; padding: 20px;
-            padding-bottom: 120px;
-            -webkit-font-smoothing: antialiased;
+            margin: 0; padding: 0;
+            -webkit-user-select: none;
+            overflow-x: hidden;
         }
 
-        /* Profile Section */
-        .profile {
+        /* Blur Header */
+        .sticky-header {
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(20px);
+            padding: 15px 20px;
             display: flex; align-items: center; justify-content: space-between;
-            margin-bottom: 30px;
         }
-        .user { display: flex; align-items: center; gap: 12px; }
-        .avatar { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 1px solid var(--accent); }
-        .welcome { font-size: 13px; color: var(--secondary); margin-bottom: 2px; }
-        .name { font-weight: 800; font-size: 18px; }
 
-        /* Categories */
-        .cats { display: flex; gap: 10px; overflow-x: auto; margin-bottom: 25px; scrollbar-width: none; }
-        .cats::-webkit-scrollbar { display: none; }
-        .cat-btn {
-            background: var(--glass); border: 1px solid rgba(255,255,255,0.1);
-            color: var(--text); padding: 10px 20px; border-radius: 100px;
-            font-size: 14px; font-weight: 600; white-space: nowrap; transition: 0.3s;
+        .profile-btn { display: flex; align-items: center; gap: 10px; }
+        .avatar { width: 38px; height: 38px; border-radius: 12px; background: var(--glass); border: 1px solid rgba(255,255,255,0.1); }
+
+        .container { padding: 0 20px 140px; }
+
+        /* Story-like Categories */
+        .story-cats {
+            display: flex; gap: 12px; overflow-x: auto;
+            padding: 20px 0; scrollbar-width: none;
         }
-        .cat-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
-
-        /* Grid */
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-        .card {
-            background: var(--card-bg); border-radius: 24px; padding: 12px;
-            border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column;
-            justify-content: space-between; height: 240px;
+        .story-cats::-webkit-scrollbar { display: none; }
+        .cat {
+            min-width: 85px; text-align: center; transition: 0.3s;
         }
-        .card img { width: 100%; height: 120px; border-radius: 18px; object-fit: cover; margin-bottom: 8px; }
-        .card-name { font-weight: 600; font-size: 15px; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .card-meta { font-size: 11px; color: var(--secondary); margin-bottom: 8px; }
-        .card-bottom { display: flex; align-items: center; justify-content: space-between; }
-        .price { color: var(--accent); font-weight: 800; font-size: 17px; }
-        .add-small { background: var(--text); color: var(--bg); border: none; width: 32px; height: 32px; border-radius: 10px; font-weight: 800; }
+        .cat-icon {
+            width: 60px; height: 60px; background: var(--card);
+            border-radius: 20px; display: flex; align-items: center;
+            justify-content: center; font-size: 24px; margin: 0 auto 8px;
+            border: 2px solid transparent;
+        }
+        .cat.active .cat-icon { border-color: var(--accent); background: rgba(255, 45, 85, 0.1); }
+        .cat-label { font-size: 11px; font-weight: 600; color: var(--gray); }
+        .cat.active .cat-label { color: var(--text); }
 
-        /* Bottom Sheet (Universal) */
+        /* Masonry-ish Grid */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .item {
+            background: var(--card); border-radius: 28px; padding: 10px;
+            position: relative; animation: fadeIn 0.5s ease forwards;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .item-img { width: 100%; aspect-ratio: 1/1; border-radius: 22px; object-fit: cover; }
+        
+        .badge {
+            position: absolute; top: 15px; left: 15px;
+            background: var(--accent); color: white; padding: 4px 8px;
+            border-radius: 8px; font-size: 9px; font-weight: 800; text-transform: uppercase;
+        }
+
+        .item-info { padding: 8px 4px; }
+        .item-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; height: 34px; overflow: hidden; }
+        .item-meta { font-size: 10px; color: var(--gray); margin-bottom: 10px; }
+        
+        .price-row { display: flex; align-items: center; justify-content: space-between; }
+        .price { font-weight: 800; font-size: 16px; }
+
+        /* Stepper Button */
+        .stepper {
+            background: var(--text); color: var(--bg);
+            border-radius: 12px; display: flex; align-items: center; gap: 10px;
+            padding: 5px 10px; font-weight: 800;
+        }
+        .add-btn {
+            background: var(--text); color: var(--bg); border: none;
+            width: 30px; height: 30px; border-radius: 10px; font-size: 18px; font-weight: 800;
+        }
+
+        /* Floating Cart (Apple Style) */
+        .cart-float {
+            position: fixed; bottom: 30px; left: 20px; right: 20px;
+            background: var(--text); color: var(--bg);
+            border-radius: 24px; padding: 20px 25px;
+            display: none; align-items: center; justify-content: space-between;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4); z-index: 1000;
+            animation: slideUp 0.3s cubic-bezier(0.17, 0.89, 0.32, 1.28);
+        }
+        @keyframes slideUp { from { transform: translateY(100px); } to { transform: translateY(0); } }
+
         .sheet {
             position: fixed; bottom: -100%; left: 0; right: 0;
-            background: #101012; border-radius: 32px 32px 0 0;
-            padding: 24px; z-index: 1000; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            border-top: 1px solid rgba(255,255,255,0.1); max-height: 85vh; overflow-y: auto;
+            background: #0a0a0a; border-radius: 35px 35px 0 0;
+            padding: 25px; z-index: 1100; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .sheet.active { bottom: 0; }
-        .overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); display: none; z-index: 999; backdrop-filter: blur(8px); }
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: none; z-index: 1050; }
 
-        /* Stats in Details */
-        .stats { display: flex; gap: 15px; margin: 15px 0; background: var(--glass); padding: 12px; border-radius: 16px; }
-        .stat-item { text-align: center; flex: 1; }
-        .stat-val { display: block; font-weight: 800; font-size: 14px; }
-        .stat-lbl { font-size: 10px; color: var(--secondary); text-transform: uppercase; }
-
-        /* Cart Items */
-        .cart-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px; }
-        .promo-box { display: flex; gap: 8px; margin: 20px 0; }
-        input { background: var(--glass); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 14px; border-radius: 12px; font-size: 14px; flex: 1; }
-
-        /* Main Fixed Button */
-        .btn-main {
-            position: fixed; bottom: 30px; left: 20px; right: 20px;
-            background: var(--accent); color: white; border: none;
-            border-radius: 20px; padding: 20px; font-weight: 800;
-            display: none; justify-content: space-between; align-items: center;
-            box-shadow: 0 10px 40px rgba(227, 30, 36, 0.3); z-index: 900;
+        input {
+            width: 100%; background: var(--glass); border: 1px solid rgba(255,255,255,0.05);
+            padding: 18px; border-radius: 18px; color: white; margin-bottom: 12px; box-sizing: border-box;
         }
     </style>
 </head>
 <body>
 
-<div class="profile">
-    <div class="user">
-        <img id="avatar" class="avatar" src="https://via.placeholder.com/44">
-        <div>
-            <div class="welcome">Добрый вечер,</div>
-            <div id="u-name" class="name">Гость</div>
+<div class="sticky-header">
+    <div class="profile-btn">
+        <img id="u-avatar" class="avatar" src="https://via.placeholder.com/38">
+        <span id="u-name" style="font-weight: 700;">Yakuza Shop</span>
+    </div>
+    <div style="background: var(--glass); padding: 8px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">
+        🟢 Open
+    </div>
+</div>
+
+<div class="container">
+    <div class="story-cats">
+        <div class="cat active">
+            <div class="cat-icon">🍣</div>
+            <div class="cat-label">Rolls</div>
+        </div>
+        <div class="cat">
+            <div class="cat-icon">🍱</div>
+            <div class="cat-label">Sets</div>
+        </div>
+        <div class="cat">
+            <div class="cat-icon">🍙</div>
+            <div class="cat-label">Sushi</div>
+        </div>
+        <div class="cat">
+            <div class="cat-icon">🍹</div>
+            <div class="cat-label">Drinks</div>
         </div>
     </div>
-    <div style="font-size: 24px;">🍱</div>
+
+    <div class="grid" id="grid"></div>
 </div>
-
-<div class="cats">
-    <button class="cat-btn active">Всё меню</button>
-    <button class="cat-btn">Роллы</button>
-    <button class="cat-btn">Премиум</button>
-    <button class="cat-btn">Напитки</button>
-</div>
-
-<div class="grid" id="grid"></div>
-
-<button class="btn-main" id="cart-btn" onclick="openCart()">
-    <span>ПОСМОТРЕТЬ КОРЗИНУ</span>
-    <span id="total-val">0 ₽</span>
-</button>
 
 <div class="overlay" id="overlay" onclick="closeAll()"></div>
-
-<div id="details-sheet" class="sheet">
-    <img id="d-img" style="width:100%; border-radius:20px; margin-bottom:20px;">
-    <h2 id="d-title" style="margin:0; font-size:24px;"></h2>
-    <div class="stats">
-        <div class="stat-item"><span class="stat-val">⏱ 20 мин</span><span class="stat-lbl">Время</span></div>
-        <div class="stat-item"><span id="d-cal" class="stat-val">🔥 450</span><span class="stat-lbl">Ккал</span></div>
-        <div class="stat-item"><span class="stat-val">🥑 12г</span><span class="stat-lbl">Жиры</span></div>
+<div id="item-sheet" class="sheet">
+    <img id="d-img" style="width:100%; border-radius:25px; margin-bottom:20px;">
+    <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:15px;">
+        <div>
+            <h2 id="d-title" style="margin:0"></h2>
+            <p id="d-meta" style="color:var(--gray); font-size:13px; margin:5px 0;"></p>
+        </div>
+        <div id="d-price" style="font-size:22px; font-weight:800; color:var(--accent);"></div>
     </div>
-    <p id="d-desc" style="color:var(--secondary); font-size:14px; line-height:1.6;"></p>
-    <button class="btn-main" style="display:flex; position:static; width:100%;" onclick="addToCart()">
-        <span>ДОБАВИТЬ В ЗАКАЗ</span>
-        <span id="d-price"></span>
+    <p id="d-desc" style="color:var(--gray); font-size:14px; line-height:1.6;"></p>
+    <button onclick="addToCartFromModal()" style="width:100%; background:var(--accent); color:white; border:none; padding:20px; border-radius:20px; font-weight:800; margin-top:10px;">
+        ДОБАВИТЬ В КОРЗИНУ
     </button>
 </div>
 
 <div id="cart-sheet" class="sheet">
-    <h2 style="margin-top:0">Ваш заказ</h2>
-    <div id="cart-items"></div>
-    <div class="promo-box">
-        <input type="text" id="promo" placeholder="Промокод">
-        <button class="cat-btn" style="background:var(--glass)">Применить</button>
-    </div>
-    <input type="text" id="addr" placeholder="Адрес доставки">
-    <input type="tel" id="tel" placeholder="Телефон">
-    <button class="btn-main" style="display:flex; position:static; width:100%; margin-top:20px;" onclick="sendOrder()">
-        <span>ПОДТВЕРДИТЬ</span>
-        <span id="c-total"></span>
+    <h2 style="margin-top:0">Order Details</h2>
+    <div id="cart-list" style="margin-bottom:20px; max-height: 200px; overflow-y: auto;"></div>
+    <input type="text" id="address" placeholder="Delivery address">
+    <input type="tel" id="phone" placeholder="Phone number">
+    <button onclick="finishOrder()" style="width:100%; background:var(--text); color:var(--bg); border:none; padding:20px; border-radius:20px; font-weight:800;">
+        CONFIRM ORDER
     </button>
+</div>
+
+<div class="cart-float" id="cart-float" onclick="openCart()">
+    <div style="display:flex; align-items:center; gap:12px;">
+        <div style="background:var(--bg); color:var(--text); width:30px; height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:800;" id="cart-count">0</div>
+        <div style="font-weight:700;">View Cart</div>
+    </div>
+    <div style="font-weight:800;" id="cart-total">0 ₽</div>
 </div>
 
 <script>
     let tg = window.Telegram.WebApp;
     let cart = [];
-    let curProduct = null;
+    let cur = null;
 
     const products = [
-        {id:1, name:"Ролл Филадельфия", price:890, cal:420, img:"https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=400", desc:"Премиальный лосось слабой соли, сливочный сыр и отборный рис. Настоящая классика в авторском исполнении."},
-        {id:2, name:"Черный Дракон", price:950, cal:480, img:"https://images.unsplash.com/photo-1559466273-d95e72debaf8?w=400", desc:"Копченый угорь под соусом унаги, тигровая креветка и авокадо. Подается с кунжутом."},
-        {id:3, name:"Трюфельный тунец", price:1100, cal:390, img:"https://images.unsplash.com/photo-1583623025817-d180a2221d0a?w=400", desc:"Свежий тунец Bluefin с капелькой трюфельного масла и микрозеленью."},
-        {id:4, name:"Сет Гейша", price:3200, cal:1200, img:"https://images.unsplash.com/photo-1617196034183-421b4917c92d?w=400", desc:"Набор из 24 роллов для изысканного вечера. Включает фирменные позиции."}
+        {id:1, name:"Philadelphia Luxury", price:1200, cal:450, meta:"8 pcs • 320g", img:"https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=400", desc:"Signature roll with double cream cheese, fresh Atlantic salmon, and premium Japanese rice.", hot:true},
+        {id:2, name:"Black Dragon", price:980, cal:480, meta:"8 pcs • 290g", img:"https://images.unsplash.com/photo-1559466273-d95e72debaf8?w=400", desc:"Smoked eel, unagi sauce, avocado and tempura shrimp. Topped with gold sesame seeds."},
+        {id:3, name:"Truffle Tuna", price:1450, cal:380, meta:"6 pcs • 210g", img:"https://images.unsplash.com/photo-1583623025817-d180a2221d0a?w=400", desc:"Fresh Bluefin tuna drizzled with truffle oil and garnished with gold leaf shards."},
+        {id:4, name:"Samurai Set", price:4500, cal:1800, meta:"32 pcs • 1.2kg", img:"https://images.unsplash.com/photo-1617196034183-421b4917c92d?w=400", desc:"Ultimate party set including all our bestsellers. Perfect for 3-4 people."}
     ];
 
     tg.expand();
+    tg.headerColor = '#000000';
     if(tg.initDataUnsafe?.user) {
         document.getElementById('u-name').innerText = tg.initDataUnsafe.user.first_name;
-        if(tg.initDataUnsafe.user.photo_url) document.getElementById('avatar').src = tg.initDataUnsafe.user.photo_url;
+        if(tg.initDataUnsafe.user.photo_url) document.getElementById('u-avatar').src = tg.initDataUnsafe.user.photo_url;
     }
 
     function render() {
         const grid = document.getElementById('grid');
-        products.forEach(p => {
-            grid.innerHTML += `
-                <div class="card" onclick="openDetails(${p.id})">
-                    <img src="${p.img}">
-                    <div>
-                        <div class="card-name">${p.name}</div>
-                        <div class="card-meta">🔥 ${p.cal} ккал • 20 мин</div>
-                    </div>
-                    <div class="card-bottom">
+        grid.innerHTML = products.map(p => `
+            <div class="item" onclick="openDetails(${p.id})">
+                ${p.hot ? '<div class="badge">Popular</div>' : ''}
+                <img src="${p.img}" class="item-img">
+                <div class="item-info">
+                    <div class="item-title">${p.name}</div>
+                    <div class="item-meta">${p.meta}</div>
+                    <div class="price-row">
                         <div class="price">${p.price} ₽</div>
-                        <button class="add-small">+</button>
+                        <button class="add-btn" onclick="event.stopPropagation(); quickAdd(${p.id})">+</button>
                     </div>
-                </div>`;
-        });
+                </div>
+            </div>
+        `).join('');
     }
 
     function openDetails(id) {
-        curProduct = products.find(p => p.id === id);
-        document.getElementById('d-img').src = curProduct.img;
-        document.getElementById('d-title').innerText = curProduct.name;
-        document.getElementById('d-desc').innerText = curProduct.desc;
-        document.getElementById('d-cal').innerText = '🔥 ' + curProduct.cal;
-        document.getElementById('d-price').innerText = curProduct.price + ' ₽';
-        document.getElementById('details-sheet').classList.add('active');
+        cur = products.find(p => p.id === id);
+        document.getElementById('d-img').src = cur.img;
+        document.getElementById('d-title').innerText = cur.name;
+        document.getElementById('d-meta').innerText = cur.meta + ' • ' + cur.cal + ' kcal';
+        document.getElementById('d-desc').innerText = cur.desc;
+        document.getElementById('d-price').innerText = cur.price + ' ₽';
+        document.getElementById('item-sheet').classList.add('active');
         document.getElementById('overlay').style.display = 'block';
         tg.HapticFeedback.impactOccurred('medium');
     }
 
-    function addToCart() {
-        cart.push(curProduct);
+    function quickAdd(id) {
+        cart.push(products.find(p => p.id === id));
+        updateCart();
+        tg.HapticFeedback.notificationOccurred('success');
+    }
+
+    function addToCartFromModal() {
+        cart.push(cur);
         updateCart();
         closeAll();
-        tg.HapticFeedback.notificationOccurred('success');
     }
 
     function updateCart() {
         const total = cart.reduce((s, p) => s + p.price, 0);
-        document.getElementById('total-val').innerText = total + ' ₽';
-        document.getElementById('c-total').innerText = total + ' ₽';
-        document.getElementById('cart-btn').style.display = cart.length > 0 ? 'flex' : 'none';
+        document.getElementById('cart-count').innerText = cart.length;
+        document.getElementById('cart-total').innerText = total + ' ₽';
+        document.getElementById('cart-float').style.display = cart.length > 0 ? 'flex' : 'none';
     }
 
     function openCart() {
-        const list = document.getElementById('cart-items');
-        list.innerHTML = cart.map(item => `
-            <div class="cart-item">
-                <span>${item.name}</span>
-                <span style="font-weight:800">${item.price} ₽</span>
+        document.getElementById('cart-list').innerHTML = cart.map(i => `
+            <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:14px;">
+                <span>${i.name}</span>
+                <span style="font-weight:700;">${i.price} ₽</span>
             </div>
         `).join('');
         document.getElementById('cart-sheet').classList.add('active');
@@ -228,11 +270,11 @@
         document.getElementById('overlay').style.display = 'none';
     }
 
-    function sendOrder() {
-        const a = document.getElementById('addr').value;
-        const t = document.getElementById('tel').value;
-        if(!a || !t) return tg.showAlert("Заполните данные для доставки");
-        tg.sendData(JSON.stringify({items: cart, total: cart.reduce((s, p) => s + p.price, 0), address: a, phone: t}));
+    function finishOrder() {
+        const a = document.getElementById('address').value;
+        const p = document.getElementById('phone').value;
+        if(!a || !p) return tg.showAlert("Please fill in delivery info");
+        tg.sendData(JSON.stringify({items: cart, total: cart.reduce((s,p)=>s+p.price,0), address: a, phone: p}));
     }
 
     render();
