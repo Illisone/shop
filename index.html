@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Мой Магазин</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        /* Используем переменные цветов из Telegram для адаптивности темы */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--tg-theme-bg-color, #f0f2f5);
+            color: var(--tg-theme-text-color, #222);
+            margin: 0; padding: 16px;
+            -webkit-user-select: none;
+        }
+
+        header { text-align: center; margin-bottom: 24px; }
+        h1 { font-size: 24px; margin: 0; color: var(--tg-theme-button-color, #2481cc); }
+        p { font-size: 14px; opacity: 0.7; }
+
+        /* Сетка товаров */
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        /* Карточка товара */
+        .card {
+            background: var(--tg-theme-secondary-bg-color, #fff);
+            border-radius: 16px;
+            padding: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            text-align: center;
+            transition: transform 0.1s ease;
+        }
+        .card:active { transform: scale(0.96); }
+
+        .image-placeholder {
+            width: 100%; height: 100px;
+            background: #eee; border-radius: 12px;
+            margin-bottom: 8px; display: flex;
+            align-items: center; justify-content: center;
+            font-size: 30px;
+        }
+
+        .price {
+            font-weight: bold; font-size: 18px;
+            color: var(--tg-theme-button-color, #2481cc);
+            margin: 8px 0;
+        }
+
+        .btn {
+            background: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #fff);
+            border: none; border-radius: 8px;
+            padding: 8px 16px; width: 100%;
+            font-weight: bold; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Coffee & Donuts</h1>
+    <p>Свежая выпечка и ароматный кофе</p>
+</header>
+
+<div class="grid">
+    <div class="card">
+        <div class="image-placeholder">☕</div>
+        <div class="name">Капучино</div>
+        <div class="price">250₽</div>
+        <button class="btn" onclick="order('Капучино', 250)">В корзину</button>
+    </div>
+    <div class="card">
+        <div class="image-placeholder">🍩</div>
+        <div class="name">Пончик</div>
+        <div class="price">150₽</div>
+        <button class="btn" onclick="order('Пончик', 150)">В корзину</button>
+    </div>
+</div>
+
+<script>
+    // Инициализация Telegram WebApp
+    const tg = window.Telegram.WebApp;
+    tg.expand(); // Разворачиваем на весь экран
+
+    function order(item, price) {
+        // Эффект вибрации при нажатии (Haptic Feedback)
+        tg.HapticFeedback.impactOccurred('medium');
+        
+        // Отправляем данные обратно в бот
+        const data = {
+            item: item,
+            price: price,
+            status: "new_order"
+        };
+        
+        tg.sendData(JSON.stringify(data)); // Закрывает WebApp и шлет данные боту
+    }
+
+    // Устанавливаем цвет кнопки MainButton (нижняя системная кнопка)
+    tg.MainButton.setText("ОФОРМИТЬ ЗАКАЗ");
+    tg.MainButton.textColor = "#FFFFFF";
+    tg.MainButton.color = "#2481cc";
+</script>
+
+</body>
+</html>
