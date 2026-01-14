@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
@@ -14,7 +14,7 @@
             --text: #ffffff;
             --gray: #8E8E93;
             --glass: rgba(255, 255, 255, 0.08);
-            --tab-bg: rgba(20, 20, 22, 0.9);
+            --tab-bg: rgba(20, 20, 22, 0.95);
         }
 
         body {
@@ -26,7 +26,7 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* Мини-шапка */
+        /* Шапка */
         .header {
             position: sticky; top: 0; z-index: 100;
             background: rgba(0,0,0,0.8);
@@ -37,62 +37,60 @@
         }
         .brand { display: flex; align-items: center; gap: 10px; }
         .logo-circle { width: 32px; height: 32px; background: var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; }
-        .shop-name { font-weight: 800; font-size: 17px; letter-spacing: -0.5px; }
+        
+        .main-content { padding: 20px 20px 180px; }
 
-        /* Контейнер контента */
-        .main-content { padding: 20px 20px 160px; }
-
-        /* Сетка товаров */
+        /* Сетка */
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .item {
             background: var(--card); border-radius: 24px; padding: 10px;
             position: relative; border: 1px solid rgba(255,255,255,0.03);
-            transition: transform 0.2s;
         }
-        .item:active { transform: scale(0.97); }
         .item-img { width: 100%; aspect-ratio: 1/1; border-radius: 18px; object-fit: cover; }
-        .item-title { font-size: 14px; font-weight: 700; margin: 10px 0 4px; height: 34px; overflow: hidden; }
+        .item-title { font-size: 14px; font-weight: 700; margin: 10px 0 4px; }
         .item-price { font-weight: 800; color: var(--accent); font-size: 16px; }
 
-        /* Нижний Таб-бар */
+        /* Таб-бар */
         .tab-bar {
             position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
             background: var(--tab-bg); border: 1px solid rgba(255,255,255,0.1);
             backdrop-filter: blur(25px); border-radius: 25px;
             padding: 6px; display: flex; align-items: center; gap: 5px;
-            z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            z-index: 1000; box-shadow: 0 10px 40px rgba(0,0,0,0.8);
         }
         .tab-item {
             padding: 10px 18px; border-radius: 20px; font-size: 13px; font-weight: 700;
-            color: var(--gray); cursor: pointer; transition: 0.3s; white-space: nowrap;
+            color: var(--gray); transition: 0.3s;
         }
         .tab-item.active { background: var(--accent); color: white; }
 
-        /* Корзина */
-        .cart-indicator {
-            position: absolute; top: -5px; right: -5px;
-            background: var(--accent); color: white; font-size: 10px;
-            width: 18px; height: 18px; border-radius: 50%;
-            display: none; align-items: center; justify-content: center; font-weight: 800;
-        }
-
-        /* Модальные окна */
+        /* Шторки */
         .sheet {
             position: fixed; bottom: -100%; left: 0; right: 0;
             background: #0d0d0f; border-radius: 35px 35px 0 0;
             padding: 25px; z-index: 2000; transition: 0.4s cubic-bezier(0.17, 0.89, 0.32, 1.2);
-            border-top: 1px solid rgba(255,255,255,0.1);
+            border-top: 1px solid rgba(255,255,255,0.1); max-height: 85vh; overflow-y: auto;
         }
         .sheet.active { bottom: 0; }
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: none; z-index: 1500; }
 
-        .btn-order {
-            width: 100%; background: var(--accent); color: white; border: none;
-            padding: 18px; border-radius: 20px; font-weight: 800; font-size: 16px;
-            margin-top: 15px; cursor: pointer;
+        /* Допы в корзине */
+        .addons { display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; scrollbar-width: none; }
+        .addon-card {
+            min-width: 100px; background: var(--glass); padding: 10px; border-radius: 15px; text-align: center;
         }
 
-        /* Анимация полета */
+        .cart-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 0; border-bottom: 1px solid #222;
+        }
+        .del-btn { color: var(--accent); font-weight: 800; font-size: 12px; cursor: pointer; }
+
+        .btn-order {
+            width: 100%; background: var(--accent); color: white; border: none;
+            padding: 18px; border-radius: 20px; font-weight: 800; font-size: 16px; margin-top: 15px;
+        }
+
         .flying-item {
             position: fixed; z-index: 9999; width: 60px; height: 60px;
             border-radius: 20px; object-fit: cover; pointer-events: none;
@@ -105,12 +103,11 @@
 <div class="header">
     <div class="brand">
         <div class="logo-circle">Y</div>
-        <div class="shop-name">YAKUZA SUSHI</div>
+        <div style="font-weight: 800;">YAKUZA SUSHI</div>
     </div>
-    <div style="position: relative; display:flex; align-items:center; gap:12px;" onclick="openCart()">
-        <div class="cart-indicator" id="c-count">0</div>
-        <span id="cart-icon" style="font-size: 22px; cursor: pointer;">🛒</span>
-        <img id="u-avatar" src="https://via.placeholder.com/32" style="width:32px; border-radius:50%; border: 1px solid var(--accent);">
+    <div style="position: relative;" onclick="openCart()">
+        <span id="cart-icon" style="font-size: 24px;">🛒</span>
+        <div id="c-count" style="position:absolute; top:-5px; right:-5px; background:var(--accent); color:white; font-size:10px; width:18px; height:18px; border-radius:50%; display:none; align-items:center; justify-content:center; font-weight:800;">0</div>
     </div>
 </div>
 
@@ -118,7 +115,7 @@
     <div class="grid" id="grid"></div>
 </div>
 
-<div class="tab-bar">
+<div class="tab-bar" id="tab-bar">
     <div class="tab-item active" onclick="setCat('all', this)">Все</div>
     <div class="tab-item" onclick="setCat('rolls', this)">Роллы</div>
     <div class="tab-item" onclick="setCat('sets', this)">Сеты</div>
@@ -128,57 +125,63 @@
 <div class="overlay" id="overlay" onclick="closeAll()"></div>
 
 <div id="details-sheet" class="sheet">
-    <img id="d-img" style="width:100%; border-radius:22px; margin-bottom:15px; object-fit: cover; height: 200px;">
-    <h2 id="d-title" style="margin:0"></h2>
-    <p id="d-desc" style="color:var(--gray); font-size:14px; line-height:1.5; margin:10px 0 20px;"></p>
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-        <span id="d-price" style="font-size:24px; font-weight:800; color:var(--accent);"></span>
-        <button class="btn-order" style="width:auto; padding: 15px 30px; margin-top:0;" onclick="addToCart()">Добавить</button>
+    <img id="d-img" style="width:100%; border-radius:22px; height:200px; object-fit:cover;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin:15px 0;">
+        <h2 id="d-title" style="margin:0"></h2>
+        <span id="d-meta" style="color:var(--gray); font-size:12px;"></span>
     </div>
+    <p id="d-desc" style="color:var(--gray); font-size:14px; line-height:1.5;"></p>
+    <button class="btn-order" id="add-to-cart-btn" onclick="addToCart()">Добавить • <span id="d-price"></span></button>
 </div>
 
 <div id="cart-sheet" class="sheet">
-    <h2 style="margin-top:0">Корзина</h2>
-    <div id="cart-items" style="max-height: 200px; overflow-y: auto; margin-bottom:15px;"></div>
-    <input type="text" id="address" style="width:100%; background:var(--glass); border:none; padding:15px; border-radius:12px; color:white; margin-bottom:10px; box-sizing:border-box;" placeholder="Адрес доставки">
-    <button class="btn-order" onclick="sendOrder()">ОФОРМИТЬ • <span id="total-val">0</span>₽</button>
+    <h2 style="margin-top:0">Мой заказ</h2>
+    <div id="cart-items"></div>
+    
+    <p style="font-size:13px; font-weight:700; margin:20px 0 10px;">ДОБАВИТЬ К ЗАКАЗУ?</p>
+    <div class="addons">
+        <div class="addon-card" onclick="addAddon('Палочки', 0)">🥢<br><small>Палочки</small><br><b>0₽</b></div>
+        <div class="addon-card" onclick="addAddon('Имбирь', 40)">💮<br><small>Имбирь</small><br><b>40₽</b></div>
+        <div class="addon-card" onclick="addAddon('Васаби', 40)">🥦<br><small>Васаби</small><br><b>40₽</b></div>
+        <div class="addon-card" onclick="addAddon('Соевый', 50)">🧴<br><small>Соевый</small><br><b>50₽</b></div>
+    </div>
+
+    <input type="text" id="address" style="width:100%; background:var(--glass); border:none; padding:15px; border-radius:15px; color:white; margin:15px 0; box-sizing:border-box;" placeholder="Куда доставить?">
+    <button class="btn-order" onclick="sendOrder()">ЗАКАЗАТЬ • <span id="total-val">0</span>₽</button>
 </div>
 
 <script>
     let tg = window.Telegram.WebApp;
     
-    // Настройки на весь экран
-    tg.expand();
-    tg.ready();
-    tg.setHeaderColor('#000000');
-    tg.setBackgroundColor('#000000');
+    // Принудительный FullScreen
+    function initApp() {
+        tg.expand();
+        tg.ready();
+        tg.enableClosingConfirmation();
+        tg.setHeaderColor('#000000');
+    }
+    initApp();
 
     let cart = [];
     let curProduct = null;
     let currentCategory = 'all';
 
     const products = [
-        {id:1, cat:'rolls', name:"Филадельфия Премиум", price:890, img:"https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=400", desc:"Классика с толстым слоем лосося, сливочным сыром и огурцом."},
-        {id:2, cat:'rolls', name:"Черный Дракон", price:950, img:"https://images.unsplash.com/photo-1559466273-d95e72debaf8?w=400", desc:"Угорь, соус унаги, кунжут и нежная креветка внутри."},
-        {id:3, cat:'sets', name:"Сет Император", price:4200, img:"https://images.unsplash.com/photo-1583623025817-d180a2221d0a?w=400", desc:"Огромный набор 48шт для большой компании."},
-        {id:4, cat:'drinks', name:"Матча Латте", price:350, img:"https://images.unsplash.com/photo-1536496070141-8440ae99de43?w=400", desc:"Натуральный японский чай с воздушной пенкой."}
+        {id:1, cat:'rolls', name:"Филадельфия", price:890, meta:"280г • 8шт", img:"https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=400", desc:"Премиум лосось, нежный сыр и авокадо сорта Хасс."},
+        {id:2, cat:'rolls', name:"Черный Дракон", price:950, meta:"310г • 8шт", img:"https://images.unsplash.com/photo-1559466273-d95e72debaf8?w=400", desc:"Копченый угорь, соус унаги и тигровая креветка."},
+        {id:3, cat:'sets', name:"Сет Якудза", price:4500, meta:"1200г • 40шт", img:"https://images.unsplash.com/photo-1583623025817-d180a2221d0a?w=400", desc:"Набор из самых популярных роллов для большой компании."},
+        {id:4, cat:'drinks', name:"Матча Ча", price:350, meta:"300мл", img:"https://images.unsplash.com/photo-1536496070141-8440ae99de43?w=400", desc:"Традиционный холодный чай матча с пенкой."}
     ];
-
-    if(tg.initDataUnsafe?.user?.photo_url) {
-        document.getElementById('u-avatar').src = tg.initDataUnsafe.user.photo_url;
-    }
 
     function render() {
         const grid = document.getElementById('grid');
-        grid.innerHTML = '';
-        products.filter(p => currentCategory === 'all' || p.cat === currentCategory).forEach(p => {
-            grid.innerHTML += `
-                <div class="item" onclick="showItem(${p.id})">
-                    <img src="${p.img}" class="item-img">
-                    <div class="item-title">${p.name}</div>
-                    <div class="item-price">${p.price} ₽</div>
-                </div>`;
-        });
+        grid.innerHTML = products.filter(p => currentCategory === 'all' || p.cat === currentCategory).map(p => `
+            <div class="item" onclick="showItem(${p.id})">
+                <img src="${p.img}" class="item-img">
+                <div class="item-title">${p.name}</div>
+                <div style="font-size:10px; color:var(--gray); margin-bottom:8px;">${p.meta}</div>
+                <div class="item-price">${p.price} ₽</div>
+            </div>`).join('');
     }
 
     function setCat(cat, el) {
@@ -195,15 +198,16 @@
         document.getElementById('d-title').innerText = curProduct.name;
         document.getElementById('d-desc').innerText = curProduct.desc;
         document.getElementById('d-price').innerText = curProduct.price + ' ₽';
+        document.getElementById('d-meta').innerText = curProduct.meta;
         document.getElementById('details-sheet').classList.add('active');
         document.getElementById('overlay').style.display = 'block';
     }
 
     function addToCart() {
-        // Анимация полета
+        // Анимация
         const img = document.getElementById('d-img');
         const flyingImg = img.cloneNode();
-        flyingImg.classList.add('flying-item');
+        flyingImg.className = 'flying-item';
         const rect = img.getBoundingClientRect();
         flyingImg.style.top = rect.top + 'px';
         flyingImg.style.left = rect.left + 'px';
@@ -218,25 +222,51 @@
         }, 10);
         setTimeout(() => flyingImg.remove(), 800);
 
-        // Логика корзины
-        cart.push(curProduct);
-        document.getElementById('c-count').innerText = cart.length;
-        document.getElementById('c-count').style.display = 'flex';
+        cart.push({...curProduct, cartId: Date.now()});
+        updateCartUI();
         closeAll();
         tg.HapticFeedback.notificationOccurred('success');
     }
 
-    function openCart() {
-        const list = document.getElementById('cart-items');
-        list.innerHTML = cart.map((i, idx) => `
-            <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #222">
-                <span>${i.name}</span>
-                <b>${i.price}₽</b>
-            </div>`).join('');
+    function updateCartUI() {
+        const count = cart.length;
+        document.getElementById('c-count').innerText = count;
+        document.getElementById('c-count').style.display = count > 0 ? 'flex' : 'none';
+        
         const total = cart.reduce((s, i) => s + i.price, 0);
         document.getElementById('total-val').innerText = total;
+    }
+
+    function openCart() {
+        const list = document.getElementById('cart-items');
+        if(cart.length === 0) {
+            list.innerHTML = `<p style="text-align:center; color:var(--gray);">Корзина пуста</p>`;
+        } else {
+            list.innerHTML = cart.map((item, idx) => `
+                <div class="cart-item">
+                    <div>
+                        <div style="font-weight:700; font-size:14px;">${item.name}</div>
+                        <div style="font-size:12px; color:var(--accent);">${item.price} ₽</div>
+                    </div>
+                    <div class="del-btn" onclick="removeFromCart(${idx})">Удалить</div>
+                </div>`).join('');
+        }
         document.getElementById('cart-sheet').classList.add('active');
         document.getElementById('overlay').style.display = 'block';
+    }
+
+    function removeFromCart(index) {
+        cart.splice(index, 1);
+        updateCartUI();
+        openCart(); // Перерисовать список
+        tg.HapticFeedback.impactOccurred('medium');
+    }
+
+    function addAddon(name, price) {
+        cart.push({name: `[Доп] ${name}`, price: price, cartId: Date.now()});
+        updateCartUI();
+        openCart();
+        tg.HapticFeedback.impactOccurred('light');
     }
 
     function closeAll() {
@@ -246,11 +276,14 @@
 
     function sendOrder() {
         const addr = document.getElementById('address').value;
+        if(cart.length === 0) return tg.showAlert("Корзина пуста!");
         if(!addr) return tg.showAlert("Введите адрес доставки!");
         tg.sendData(JSON.stringify({items: cart, address: addr, total: cart.reduce((s,i)=>s+i.price,0)}));
     }
 
     render();
+    // Повторный вызов для гарантии FullScreen на некоторых устройствах
+    window.onload = () => { tg.expand(); };
 </script>
 </body>
 </html>
