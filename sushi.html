@@ -2,16 +2,145 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="style_sushi.css">
+    <style>
+        :root {
+            /* ОСНОВНЫЕ НАСТРОЙКИ (МЕНЯЙ ЦВЕТА ТУТ) */
+            --bg: #000000;
+            --card: #141416;
+            --accent: #FF2D55;
+            --accent-light: #d4ff33; /* Лаймовый для цен самовывоза */
+            --text: #ffffff;
+            --gray: #8E8E93;
+            --glass: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.08);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+            background: var(--bg); color: var(--text);
+            margin: 0; padding: 0; overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* --- АНИМАЦИИ --- */
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; } to { opacity: 1; }
+        }
+
+        /* --- ШАПКА --- */
+        .header {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(20px);
+            padding: 12px 20px; display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 0.5px solid var(--border);
+        }
+
+        .user-avatar {
+            width: 36px; height: 36px; border-radius: 50%;
+            border: 2px solid var(--accent); object-fit: cover;
+        }
+
+        .main-content { padding-top: 80px; padding-bottom: 120px; }
+
+        /* --- СТОРИЗ (АКЦИИ) --- */
+        .stories {
+            display: flex; overflow-x: auto; gap: 12px; padding: 0 20px 20px;
+            scrollbar-width: none;
+        }
+        .stories::-webkit-scrollbar { display: none; }
+
+        .story-card {
+            min-width: 120px; height: 160px; border-radius: 20px;
+            position: relative; overflow: hidden; flex-shrink: 0;
+            border: 1px solid var(--border);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .story-card:active { transform: scale(0.92); }
+        .story-card img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
+        .story-card span {
+            position: absolute; bottom: 10px; left: 10px; right: 10px;
+            font-size: 11px; font-weight: 800; line-height: 1.2;
+        }
+
+        /* --- ГРИД ТОВАРОВ --- */
+        .grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 20px;
+        }
+
+        .item {
+            background: var(--card); border-radius: 24px; padding: 12px;
+            border: 1px solid var(--border); position: relative;
+            animation: slideUp 0.5s ease backwards;
+        }
+        
+        .item-img { width: 100%; aspect-ratio: 1/1; border-radius: 18px; object-fit: cover; margin-bottom: 10px; }
+
+        /* БЕЙДЖИ */
+        .badge {
+            position: absolute; top: 18px; right: 18px;
+            background: var(--accent); color: white;
+            font-size: 9px; font-weight: 900; padding: 4px 8px;
+            border-radius: 8px; z-index: 2;
+        }
+
+        /* ЦЕНЫ */
+        .price-row { display: flex; justify-content: space-between; margin-top: 8px; border-top: 1px solid #222; padding-top: 8px; }
+        .p-box { display: flex; flex-direction: column; }
+        .p-val { font-size: 14px; font-weight: 800; }
+        .p-val.pickup { color: var(--accent-light); }
+        .p-lab { font-size: 8px; color: var(--gray); text-transform: uppercase; }
+
+        /* --- ШТОРКИ (MODALS) --- */
+        .overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px); opacity: 0; visibility: hidden; z-index: 1500; transition: 0.3s;
+        }
+        .overlay.active { opacity: 1; visibility: visible; }
+
+        .sheet {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: #111; border-radius: 30px 30px 0 0;
+            padding: 20px 20px 40px; z-index: 2000;
+            transform: translateY(105%); transition: transform 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+            max-height: 85vh; overflow-y: auto;
+        }
+        .sheet.active { transform: translateY(0); }
+
+        /* КОРЗИНА */
+        .cart-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px; background: #1c1c1e; border-radius: 20px; margin-bottom: 10px;
+            animation: slideUp 0.3s ease;
+        }
+
+        .pay-selector { display: flex; background: #222; border-radius: 15px; padding: 4px; margin: 20px 0; }
+        .pay-opt { flex: 1; text-align: center; padding: 12px; font-size: 12px; font-weight: 700; border-radius: 12px; color: var(--gray); }
+        .pay-opt.active { background: #333; color: white; }
+
+        .btn-main {
+            width: 100%; background: var(--accent-light); color: black; border: none;
+            padding: 20px; border-radius: 20px; font-weight: 800; font-size: 16px; margin-top: 10px;
+        }
+
+        .input-style {
+            width: 100%; background: #1c1c1e; border: 1px solid #333; padding: 18px;
+            border-radius: 18px; color: white; margin-bottom: 15px; box-sizing: border-box; outline: none;
+        }
+    </style>
 </head>
 <body>
 
 <div class="header">
     <div style="font-weight:900; font-size:22px; letter-spacing:-1px;">YAKUZA</div>
     <div style="display:flex; gap:12px; align-items:center;">
-        <div onclick="openCart()" style="position:relative; background:#1a1a1c; width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+        <div onclick="openCart()" style="position:relative; background:var(--glass); width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center;">
             <span style="font-size:20px;">🛒</span>
             <div id="c-count" style="position:absolute; top:-2px; right:-2px; background:var(--accent); color:white; font-size:10px; width:18px; height:18px; border-radius:50%; display:none; align-items:center; justify-content:center; font-weight:bold; border:2px solid #000;">0</div>
         </div>
@@ -20,51 +149,49 @@
 </div>
 
 <div class="main-content">
-    <div class="stories-container">
+    <div class="stories">
         <div class="story-card" style="background: linear-gradient(to top, #FF2D55, transparent);">
             <img src="https://images.unsplash.com/photo-1553621042-f6e147245754?w=300">
-            <span>Скидка -20% на первый заказ</span>
+            <span>Подарок к заказу от 2000₽</span>
         </div>
         <div class="story-card" style="background: linear-gradient(to top, #d4ff33, transparent);">
             <img src="https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=300">
-            <span style="color:black">Счастливые часы 14:00-17:00</span>
+            <span style="color:black">Скидка -15% на самовывоз</span>
         </div>
         <div class="story-card">
             <img src="https://images.unsplash.com/photo-1611143669185-af224c5e3252?w=300">
-            <span>Подарок при заказе от 3000₽</span>
+            <span>Новый сет "Самурай"</span>
         </div>
     </div>
 
-    <h3 style="margin:10px 20px 15px; font-weight:800; font-size:22px;">Наше меню</h3>
     <div class="grid" id="grid"></div>
 </div>
 
 <div class="overlay" id="overlay" onclick="closeAll()"></div>
 
+<div id="details-sheet" class="sheet">
+    <div style="width:40px; height:4px; background:#333; border-radius:10px; margin: 0 auto 15px;"></div>
+    <img id="d-img" style="width:100%; border-radius:24px; height:260px; object-fit:cover;">
+    <h2 id="d-title" style="margin:20px 0 5px; font-size:26px; font-weight:900;"></h2>
+    <p id="d-meta" style="color:var(--gray); font-size:14px; margin-bottom:15px;"></p>
+    <p id="d-desc" style="color:#bbb; line-height:1.5; font-size:15px; margin-bottom:20px;"></p>
+    <button class="btn-main" onclick="addToCartFromDetails()">Добавить в корзину</button>
+</div>
+
 <div id="cart-sheet" class="sheet">
-    <div style="width:40px; height:4px; background:#333; border-radius:10px; margin: 0 auto 20px;"></div>
-    <h2 style="margin:0 0 20px; font-size:28px; font-weight:900;">Ваш заказ</h2>
-    
+    <div style="width:40px; height:4px; background:#333; border-radius:10px; margin: 0 auto 15px;"></div>
+    <h2 style="margin:0 0 20px; font-weight:900;">Ваш заказ</h2>
     <div id="cart-items"></div>
-
-    <div id="cart-empty-msg" style="text-align:center; padding:40px 0; color:var(--gray); display:none;">
-        Ваша корзина пуста
-    </div>
-
-    <div id="cart-controls" style="margin-top:20px;">
-        <button class="geo-btn" onclick="getLocation()">
-            📍 <span>Указать адрес на карте</span>
-        </button>
-        <input type="text" id="address" placeholder="Улица, дом, квартира" style="width:100%; background:#1c1c1e; border:1px solid #333; padding:18px; border-radius:18px; color:white; font-size:16px; box-sizing:border-box; margin-bottom:20px; outline:none;">
-
-        <div style="font-size:14px; font-weight:700; color:var(--gray); margin-bottom:10px;">СПОСОБ ОПЛАТЫ</div>
-        <div class="payment-selector">
-            <div class="pay-option active" onclick="setPay('cash', this)">Наличные</div>
-            <div class="pay-option" onclick="setPay('card', this)">Терминал</div>
-            <div class="pay-option" onclick="setPay('online', this)">Онлайн</div>
+    <div id="cart-empty" style="text-align:center; padding:30px; color:var(--gray); display:none;">Корзина пуста</div>
+    
+    <div id="cart-ui">
+        <input type="text" id="address" class="input-style" placeholder="Адрес доставки">
+        <div class="pay-selector">
+            <div class="pay-opt active" onclick="setPay('cash', this)">Наличные</div>
+            <div class="pay-opt" onclick="setPay('card', this)">Картой</div>
+            <div class="pay-opt" onclick="setPay('online', this)">Онлайн</div>
         </div>
-
-        <button class="btn-order" onclick="sendOrder()">Оформить заказ • <span id="total-val">0</span>₽</button>
+        <button class="btn-main" onclick="sendOrder()">Заказать • <span id="total-val">0</span>₽</button>
     </div>
 </div>
 
@@ -72,63 +199,83 @@
     let tg = window.Telegram.WebApp;
     tg.expand();
 
-    // Загрузка фото юзера
-    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-        const user = tg.initDataUnsafe.user;
-        if (user.photo_url) {
-            document.getElementById('u-avatar').src = user.photo_url;
-        }
+    // Загрузка фото из ТГ
+    if (tg.initDataUnsafe?.user?.photo_url) {
+        document.getElementById('u-avatar').src = tg.initDataUnsafe.user.photo_url;
     }
 
     let cart = [];
-    let paymentMethod = 'cash';
+    let curProd = null;
+    let payMethod = 'cash';
 
+    // ТВОИ ТОВАРЫ (id, name, price, meta, img, desc, tag)
     const products = [
-        {id: 1, name: "Мечта кота", priceDel: 1530, meta: "1050 г", img: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=600"},
-        {id: 2, name: "Сет Зимний", priceDel: 1945, meta: "2100 г", img: "https://images.unsplash.com/photo-1583623025817-d180a2221d0a?w=600"},
-        {id: 3, name: "Филадельфия", priceDel: 650, meta: "280 г", img: "https://images.unsplash.com/photo-1553621042-f6e147245754?w=600"}
+        {id: 1, name: "Мечта кота", price: 1530, pick: 1280, meta: "32 шт | 1.1 кг", img: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=600", desc: "Филадельфия огурец, Филадельфия бекон, Темпура чикен, Темпура тамаго лосось.", tag: "ХИТ"},
+        {id: 2, name: "Сет Зимний", price: 1945, pick: 1650, meta: "64 шт | 2.2 кг", img: "https://images.unsplash.com/photo-1583623025817-d180a2221d0a?w=600", desc: "Огромный сет для большой компании. Включает все классические роллы.", tag: "NEW"},
+        {id: 3, name: "Филадельфия", price: 650, pick: 550, meta: "8 шт | 280 г", img: "https://images.unsplash.com/photo-1553621042-f6e147245754?w=600", desc: "Классический ролл со свежим лососем и сливочным сыром.", tag: ""},
+        {id: 4, name: "Калифорния", price: 590, pick: 490, meta: "8 шт | 250 г", img: "https://images.unsplash.com/photo-1559466273-d95e72debaf8?w=600", desc: "Снежный краб, огурец и икра тобико.", tag: ""}
     ];
 
     function render() {
         const grid = document.getElementById('grid');
-        grid.innerHTML = products.map(p => `
-            <div class="item" onclick="addToCart(${p.id})">
+        grid.innerHTML = products.map((p, i) => `
+            <div class="item" style="animation-delay: ${i * 0.1}s" onclick="showDetails(${p.id})">
+                ${p.tag ? `<div class="badge">${p.tag}</div>` : ''}
                 <img src="${p.img}" class="item-img">
-                <div style="font-weight:800; font-size:16px;">${p.name}</div>
-                <div style="font-size:12px; color:var(--gray); margin-bottom:10px;">${p.meta}</div>
-                <div style="font-weight:900; color:var(--accent-pickup); font-size:18px;">${p.priceDel} ₽</div>
-                <div style="position:absolute; bottom:12px; right:12px; background:var(--accent); width:28px; height:28px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-weight:bold;">+</div>
+                <div style="font-weight:800; font-size:15px;">${p.name}</div>
+                <div style="font-size:11px; color:var(--gray);">${p.meta}</div>
+                <div class="price-row">
+                    <div class="p-box">
+                        <span class="p-val">${p.price}₽</span>
+                        <span class="p-lab">Дост.</span>
+                    </div>
+                    <div class="p-box">
+                        <span class="p-val pickup">${p.pick}₽</span>
+                        <span class="p-lab">Сам.</span>
+                    </div>
+                </div>
             </div>
         `).join('');
     }
 
-    function addToCart(id) {
-        const p = products.find(x => x.id === id);
-        cart.push(p);
-        updateCart();
+    function showDetails(id) {
+        curProd = products.find(p => p.id === id);
+        document.getElementById('d-img').src = curProd.img;
+        document.getElementById('d-title').innerText = curProd.name;
+        document.getElementById('d-meta').innerText = curProd.meta;
+        document.getElementById('d-desc').innerText = curProd.desc;
+        document.getElementById('details-sheet').classList.add('active');
+        document.getElementById('overlay').classList.add('active');
+        tg.HapticFeedback.impactOccurred('medium');
+    }
+
+    function addToCartFromDetails() {
+        cart.push(curProd);
+        updateCartUI();
+        closeAll();
         tg.HapticFeedback.notificationOccurred('success');
     }
 
-    function updateCart() {
+    function updateCartUI() {
         const count = document.getElementById('c-count');
         count.innerText = cart.length;
         count.style.display = cart.length > 0 ? 'flex' : 'none';
-        document.getElementById('total-val').innerText = cart.reduce((s, i) => s + i.priceDel, 0);
+        document.getElementById('total-val').innerText = cart.reduce((s, i) => s + i.price, 0);
     }
 
     function openCart() {
         const list = document.getElementById('cart-items');
-        if (cart.length === 0) {
+        if(cart.length === 0) {
+            document.getElementById('cart-empty').style.display = 'block';
+            document.getElementById('cart-ui').style.display = 'none';
             list.innerHTML = '';
-            document.getElementById('cart-empty-msg').style.display = 'block';
-            document.getElementById('cart-controls').style.display = 'none';
         } else {
-            document.getElementById('cart-empty-msg').style.display = 'none';
-            document.getElementById('cart-controls').style.display = 'block';
+            document.getElementById('cart-empty').style.display = 'none';
+            document.getElementById('cart-ui').style.display = 'block';
             list.innerHTML = cart.map((i, idx) => `
                 <div class="cart-item">
-                    <div><b>${i.name}</b><br><small style="color:var(--gray)">${i.priceDel} ₽</small></div>
-                    <div style="color:var(--accent); font-weight:700;" onclick="removeFromCart(${idx})">Удалить</div>
+                    <div><b>${i.name}</b><br><small>${i.price} ₽</small></div>
+                    <div style="color:var(--accent); font-weight:800;" onclick="removeItem(${idx})">Удалить</div>
                 </div>
             `).join('');
         }
@@ -136,27 +283,17 @@
         document.getElementById('overlay').classList.add('active');
     }
 
-    function removeFromCart(idx) {
+    function removeItem(idx) {
         cart.splice(idx, 1);
-        updateCart();
+        updateCartUI();
         openCart();
     }
 
-    function setPay(method, el) {
-        paymentMethod = method;
-        document.querySelectorAll('.pay-option').forEach(opt => opt.classList.remove('active'));
+    function setPay(m, el) {
+        payMethod = m;
+        document.querySelectorAll('.pay-opt').forEach(o => o.classList.remove('active'));
         el.classList.add('active');
         tg.HapticFeedback.impactOccurred('light');
-    }
-
-    function getLocation() {
-        tg.LocationManager.getLocation((data) => {
-            if (data) {
-                document.getElementById('address').value = `Широта: ${data.latitude.toFixed(4)}, Долгота: ${data.longitude.toFixed(4)}`;
-            } else {
-                tg.showAlert("Не удалось получить доступ к геопозиции");
-            }
-        });
     }
 
     function closeAll() {
@@ -165,17 +302,16 @@
     }
 
     function sendOrder() {
-        if (cart.length === 0) return;
+        if(cart.length === 0) return;
         const addr = document.getElementById('address').value;
-        if (!addr) { tg.showAlert("Введите адрес доставки"); return; }
+        if(!addr) return tg.showAlert("Введите адрес доставки!");
         
-        const orderData = {
-            items: cart,
+        tg.sendData(JSON.stringify({
+            order: cart,
             address: addr,
-            payment: paymentMethod,
+            payment: payMethod,
             total: document.getElementById('total-val').innerText
-        };
-        tg.sendData(JSON.stringify(orderData));
+        }));
     }
 
     render();
