@@ -23,6 +23,9 @@
   *{box-sizing:border-box;-webkit-font-smoothing:antialiased;}
   body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Helvetica Neue',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;scroll-behavior:smooth;}
 
+  /* РАЗВОРОТ НА ВЕСЬ ЭКРАН */
+  html,body{height:100%;}
+
   /* ЛОГО в «островке» */
   .top-line{display:flex;align-items:center;justify-content:space-between;padding:10px 20px 0;}
   .logo-island{background:var(--glass);backdrop-filter:blur(20px);border:0.5px solid var(--border);border-radius:var(--radius);padding:8px 14px;font-weight:900;font-size:18px;letter-spacing:-0.5px;}
@@ -30,9 +33,6 @@
   .bals{display:flex;align-items:center;gap:6px;background:#222;border-radius:12px;padding:6px 10px;font-size:13px;font-weight:600;}
   .bals-icon{color:var(--accent-light);}
   .user-avatar{width:32px;height:32px;border-radius:50%;border:2px solid var(--accent);object-fit:cover;cursor:pointer;}
-
-  /* РАЗВОРОТ НА ВЕСЬ ЭКРАН */
-  html,body{height:100%;}
 
   /* промо */
   .hero-slider{position:relative;width:calc(100% - 40px);height:180px;margin:12px auto;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
@@ -160,10 +160,7 @@
 <!-- детали товара (шторка) -->
 <div id="details-sheet" class="sheet">
   <div class="sheet-handle"></div>
-  <!-- КНОПКА ЗАКРЫТЬ вверху справа -->
-  <div style="display:flex;justify-content:flex-end;padding:0 0 10px;">
-    <button class="detail-close" onclick="closeAll()">✕</button>
-  </div>
+  <!-- свайп вниз = закрыть (без кнопки) -->
   <img id="d-img" style="width:100%;border-radius:22px;height:260px;object-fit:cover;">
   <h2 id="d-title" style="margin:20px 0 5px;font-size:26px;font-weight:900;"></h2>
   <p id="d-meta" style="color:var(--text-gray);font-size:14px;margin-bottom:15px;"></p>
@@ -473,8 +470,10 @@
     document.getElementById('mini-cart').style.display='none';
   }
 
+  // === свайп-закрытие шторок ===
   document.querySelectorAll('.sheet').forEach(sh=>{
-    const h = new Hammer(sh); h.on('swipedown', closeAll);
+    const h = new Hammer(sh);
+    h.on('swipedown', closeAll);
   });
 
   initHeroSlider();
