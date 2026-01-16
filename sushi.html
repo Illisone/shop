@@ -41,12 +41,11 @@
   /* контент */
   .main-content{padding-top:12px;padding-bottom:calc(70px + env(safe-area-inset-bottom,0));}
 
-  /* grid */
+  /* grid + БОЛЬШИЕ картинки */
   .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;padding:0 20px;}
   .item{background:var(--card);border-radius:var(--radius);padding:12px;border:1px solid var(--border);box-shadow:var(--shadow);position:relative;animation:slideUp .5s ease backwards;transition:transform .25s,background .25s;}
   .item:active{transform:scale(0.96);background:#1a1a1c;}
-  .item-img{width:100%;aspect-ratio:1/1;border-radius:18px;object-fit:cover;margin-bottom:10px;}
-  /* теги: текст + картинка (эмодзи/иконка) */
+  .item-img{width:100%;aspect-ratio:1.15 / 1;border-radius:18px;object-fit:cover;margin-bottom:10px;transform:scale(1.05);transform-origin:center;}
   .badge{position:absolute;top:12px;right:12px;display:flex;align-items:center;gap:4px;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);padding:4px 8px;border-radius:8px;font-size:11px;font-weight:800;z-index:2;}
   .badge-icon{font-size:14px;line-height:1;}
   .price-row{margin-top:8px;border-top:1px solid rgba(255,255,255,.06);padding-top:8px;text-align:right;}
@@ -64,6 +63,7 @@
   .sheet{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-radius:32px 32px 0 0;padding:24px 20px 40px;max-height:85vh;overflow:hidden;z-index:2000;transform:translateY(105%);transition:transform .5s cubic-bezier(.19,1,.22,1);box-shadow:var(--shadow);display:flex;flex-direction:column;}
   .sheet.active{transform:translateY(0);}
   .sheet-handle{width:40px;height:4px;background:#333;border-radius:10px;margin:0 auto 15px;}
+  /* контент скроллится, кнопка всегда видна */
   .sheet-scroll{flex:1;overflow-y:auto;margin:0 -20px;padding:0 20px;}
   .btn-main{width:100%;background:var(--accent-light);color:#000;border:none;padding:20px;border-radius:22px;font-weight:800;font-size:16px;margin-top:10px;transition:transform .15s,background .15s;}
   .btn-main:active{transform:scale(0.97);background:#c4ff4c;}
@@ -103,7 +103,7 @@
   @keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
 
   /* === плавающая корзина в правом нижнем углу === */
-  #mini-cart{position:fixed;bottom:20px;right:20px;width:150px;height:50px;background:var(--accent);color:#fff;border-radius:25px;display:none;align-items:center;justify-content:center;gap:8px;font-weight:800;font-size:14px;box-shadow:var(--shadow);z-index:999;cursor:pointer;transition:transform .2s;}
+  #mini-cart{position:fixed;bottom:80px;right:20px;width:150px;height:50px;background:var(--accent);color:#fff;border-radius:25px;display:none;align-items:center;justify-content:center;gap:8px;font-weight:800;font-size:14px;box-shadow:var(--shadow);z-index:999;cursor:pointer;transition:transform .2s;}
   #mini-cart:active{transform:scale(0.95);}
 </style>
 </head>
@@ -145,7 +145,7 @@
   </button>
 </nav>
 
-<!-- плавающая корзина -->
+<!-- плавающая корзина (выше табов) -->
 <div id="mini-cart" onclick="openCart()">
   <span>🛒</span>
   <span id="mini-sum">0₽</span>
@@ -199,6 +199,7 @@
     <!-- адрес (можно редактировать) -->
     <input type="text" id="address" class="input-style" placeholder="Адрес доставки">
   </div>
+  <!-- кнопка всегда видна (вне скролла) -->
   <button class="btn-main" onclick="sendOrder()">Оформить заказ</button>
 </div>
 
@@ -206,19 +207,22 @@
 <div id="profile-sheet" class="sheet">
   <div class="sheet-handle"></div>
   <h2 style="margin:0 0 20px;font-weight:900;">Личный кабинет</h2>
-  <div class="profile-card">
-    <img id="profile-avatar" class="profile-avatar-large" src="https://via.placeholder.com/100" alt="">
-    <div class="profile-name" id="profile-name">—</div>
-    <div class="profile-phone" id="profile-phone">—</div>
-    <div class="profile-bonus-card">
-      <div class="profile-bonus-label">Бонусы</div>
-      <div class="profile-bonus-val" id="profile-bonus">1 250 ₽</div>
+  <div class="sheet-scroll">
+    <div class="profile-card">
+      <img id="profile-avatar" class="profile-avatar-large" src="https://via.placeholder.com/100" alt="">
+      <div class="profile-name" id="profile-name">—</div>
+      <div class="profile-phone" id="profile-phone">—</div>
+      <div class="profile-bonus-card">
+        <div class="profile-bonus-label">Бонусы</div>
+        <div class="profile-bonus-val" id="profile-bonus">1 250 ₽</div>
+      </div>
+    </div>
+    <div style="margin-bottom:20px;">
+      <div style="font-size:14px;color:var(--text-gray);">Адрес доставки</div>
+      <input type="text" id="profile-address" class="input-style" placeholder="Улица, дом, квартира">
     </div>
   </div>
-  <div style="margin-bottom:20px;">
-    <div style="font-size:14px;color:var(--text-gray);">Адрес доставки</div>
-    <input type="text" id="profile-address" class="input-style" placeholder="Улица, дом, квартира">
-  </div>
+  <!-- кнопка всегда видна (вне скролла) -->
   <button class="btn-main" onclick="saveProfile()">Сохранить</button>
 </div>
 
@@ -354,7 +358,7 @@
     const c=cart.reduce((s,i)=>s+(i.qty||1),0);
     document.getElementById('bals-val').innerText = userData.bonus.toLocaleString();
 
-    // --- мини-корзина ---
+    // --- мини-корзина (выше табов) ---
     const sub = cart.filter(i=>!i.isExtra).reduce((s,i)=>s+i.price*(i.qty||1),0);
     document.getElementById('mini-sum').innerText = sub+'₽';
 
@@ -456,7 +460,6 @@
   function showMiniCart(){
     const mc = document.getElementById('mini-cart');
     mc.style.display='flex';
-    // анимация появления
     mc.animate([{transform:'scale(0.8)',opacity:0},{transform:'scale(1)',opacity:1}],{duration:200,fill:'forwards'});
   }
   function hideMiniCart(){
