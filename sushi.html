@@ -8,7 +8,21 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
   <style>
+  /* ========== 1. СВЕТЛАЯ/ТЁМНАЯ ТЕМА ========== */
   :root{
+    /* светлая по умолчанию */
+    --bg:#f4f4f6;
+    --card:#ffffff;
+    --text:#000000;
+    --text-gray:#6c6c70;
+    --accent:#ff2d55;
+    --accent-light:#32d74b;
+    --glass:rgba(255,255,255,0.7);
+    --border:rgba(0,0,0,0.08);
+    --shadow:0 8px 32px rgba(0,0,0,0.08);
+    --radius:24px;
+  }
+  body[data-theme="dark"]{
     --bg:#000000;
     --card:#111113;
     --text:#ffffff;
@@ -18,12 +32,13 @@
     --glass:rgba(255,255,255,0.05);
     --border:rgba(255,255,255,0.08);
     --shadow:0 8px 32px rgba(255,45,85,0.25);
-    --radius:24px;
   }
+
+  /* ========== 2. 120 Гц АНИМАЦИИ ========== */
+  .item,.extra-card,.cart-btn,.btn-main{will-change:transform;transition:transform .2s cubic-bezier(0.4, 0, 0.2, 1);}
+
   *{box-sizing:border-box;-webkit-font-smoothing:antialiased;}
   body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Helvetica Neue',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;scroll-behavior:smooth;}
-
-  /* РАЗВОРОТ НА ВЕСЬ ЭКРАН */
   html,body{height:100%;}
 
   /* ЛОГО в «островке» */
@@ -34,6 +49,11 @@
   .bals-icon{color:var(--accent-light);}
   .user-avatar{width:32px;height:32px;border-radius:50%;border:2px solid var(--accent);object-fit:cover;cursor:pointer;}
 
+  /* поиск + голос */
+  .search-bar{display:flex;align-items:center;gap:8px;margin:0 20px 12px;}
+  #search-input{flex:1;background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:8px 12px;color:var(--text);font-size:14px;}
+  #voice-btn{background:none;border:none;font-size:20px;color:var(--text);cursor:pointer;}
+
   /* промо */
   .hero-slider{position:relative;width:calc(100% - 40px);height:180px;margin:12px auto;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
   .hero-slide{position:absolute;inset:0;opacity:0;transition:opacity 1s ease;}
@@ -41,7 +61,7 @@
   .hero-slide.active{opacity:1;}
   .hero-text{position:absolute;bottom:16px;left:20px;right:20px;font-size:18px;font-weight:800;text-shadow:0 1px 4px rgba(0,0,0,.7);}
 
-  /* контент */
+  /* контent */
   .main-content{padding-top:12px;padding-bottom:calc(70px + env(safe-area-inset-bottom,0));}
 
   /* grid + БОЛЬШИЕ картинки */
@@ -107,6 +127,14 @@
   .profile-bonus-card{background:#222;border-radius:12px;padding:12px;margin-bottom:15px;}
   .profile-bonus-label{font-size:13px;color:var(--text-gray);}
   .profile-bonus-val{font-size:24px;font-weight:800;color:var(--accent-light);}
+  /* === 1. ПЕРЕКЛЮЧАТЕЛЬ ТЕМЫ === */
+  .theme-switch{position:relative;display:inline-flex;align-items:center;gap:8px;margin-top:8px;}
+  .theme-switch input{opacity:0;width:0;height:0;}
+  .slider{width:44px;height:24px;background:#222;border-radius:12px;position:relative;cursor:pointer;transition:background .2s;}
+  .slider:before{content:'';position:absolute;width:20px;height:20px;background:var(--accent-light);border-radius:50%;top:2px;left:2px;transition:transform .2s;}
+  body[data-theme="dark"] .slider{background:#444;}
+  body[data-theme="dark"] .slider:before{transform:translateX(20px);}
+  .labels{font-size:16px;}
   @keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
 </style>
 </head>
@@ -119,6 +147,12 @@
     <div class="bals"><span class="bals-icon">💎</span><span id="bals-val">1 250</span></div>
     <img id="user-avatar" class="user-avatar" src="https://via.placeholder.com/100" alt="" onclick="openProfile()">
   </div>
+</div>
+
+<!-- === 3. ПОИСК + ГОЛОСОВОЙ ВВОД === -->
+<div class="search-bar">
+  <input id="search-input" type="text" placeholder="🔍 Поиск товаров">
+  <button id="voice-btn" title="Голосовой поиск">🎤</button>
 </div>
 
 <div class="main-content">
@@ -160,7 +194,6 @@
 <!-- детали товара (шторка) -->
 <div id="details-sheet" class="sheet">
   <div class="sheet-handle"></div>
-  <!-- свайп вниз = закрыть (без кнопки) -->
   <img id="d-img" style="width:100%;border-radius:22px;height:260px;object-fit:cover;">
   <h2 id="d-title" style="margin:20px 0 5px;font-size:26px;font-weight:900;"></h2>
   <p id="d-meta" style="color:var(--text-gray);font-size:14px;margin-bottom:15px;"></p>
@@ -225,6 +258,15 @@
       <div style="font-size:14px;color:var(--text-gray);">Адрес доставки</div>
       <input type="text" id="profile-address" class="input-style" placeholder="Улица, дом, квартира">
     </div>
+    <!-- === 1. ПЕРЕКЛЮЧАТЕЛЬ ТЕМЫ === -->
+    <div style="margin-top:20px;">
+      <div style="font-size:14px;color:var(--text-gray);">Тема оформления</div>
+      <label class="theme-switch">
+        <input type="checkbox" id="theme-toggle">
+        <span class="slider"></span>
+        <span class="labels">🌙</span>
+      </label>
+    </div>
   </div>
   <!-- кнопка всегда видна (вне скролла) -->
   <button class="btn-main" onclick="saveProfile()">Сохранить</button>
@@ -239,21 +281,21 @@
   const menu = {
     rolls: [
       {id:1,name:"Мечта кота",price:1530,meta:"32 шт | 1.1 кг",img:"https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=600",desc:"Филадельфия огурец, Филадельфия бекон, Темпура чикен, Темпура тамаго лосось.",tag:"HOT",tagIcon:"🌶️"},
-      {id:2,name:"Сет Зимний",price:1945,meta:"64 шт | 2.2 кг",img:"https://images.unsplash.com/photo-1583623025817-d180a2221d0a?w=600",desc:"Огромный сет для большой компании.",tag:"NEW",tagIcon:"🔥"},
-      {id:3,name:"Филадельфия",price:650,meta:"8 шт | 280 г",img:"https://images.unsplash.com/photo-1553621042-f6e147245754?w=600",desc:"Классический ролл со свежим лососем.",tag:"",tagIcon:""},
-      {id:4,name:"Калифорния",price:590,meta:"8 шт | 250 г",img:"https://images.unsplash.com/photo-1559466273-d95e72debaf8?w=600",desc:"Снежный краб, огурец и икра тобико.",tag:"",tagIcon:""}
+      {id:2,name:"Сет Зимний",price:1945,meta:"64 шт | 2.2 кг",img:"https://images.unsplash.com/photo/1583623025817-d180a2221d0a?w=600",desc:"Огромный сет для большой компании.",tag:"NEW",tagIcon:"🔥"},
+      {id:3,name:"Филадельфия",price:650,meta:"8 шт | 280 г",img:"https://images.unsplash.com/photo/1553621042-f6e147245754?w=600",desc:"Классический ролл со свежим лососем.",tag:"",tagIcon:""},
+      {id:4,name:"Калифорния",price:590,meta:"8 шт | 250 г",img:"https://images.unsplash.com/photo/1559466273-d95e72debaf8?w=600",desc:"Снежный краб, огурец и икра тобико.",tag:"",tagIcon:""}
     ],
     wok: [
-      {id:5,name:"Курица вок",price:490,meta:"320 г",img:"https://images.unsplash.com/photo-1625938146369-adc83368bda7?w=600",desc:"Курица, овощи, соус терияки.",tag:"",tagIcon:""},
-      {id:6,name:"Говядина вок",price:590,meta:"320 г",img:"https://images.unsplash.com/photo-1625938146369-adc83368bda7?w=600",desc:"Говядина, овощи, соус чили.",tag:"HOT",tagIcon:"🌶️"}
+      {id:5,name:"Курица вок",price:490,meta:"320 г",img:"https://images.unsplash.com/photo/1625938146369-adc83368bda7?w=600",desc:"Курица, овощи, соус терияки.",tag:"",tagIcon:""},
+      {id:6,name:"Говядина вок",price:590,meta:"320 г",img:"https://images.unsplash.com/photo/1625938146369-adc83368bda7?w=600",desc:"Говядина, овощи, соус чили.",tag:"HOT",tagIcon:"🌶️"}
     ],
     snacks: [
-      {id:7,name:"Гедза",price:290,meta:"6 шт",img:"https://images.unsplash.com/photo-1617093727343-374698b1b08d?w=600",desc:"Курица, свинина, овощи.",tag:"",tagIcon:""},
-      {id:8,name:"Спайси эдамаме",price:190,meta:"120 г",img:"https://images.unsplash.com/photo-1609501676725-7186f017a4b7?w=600",desc:"Острый соус, кунжут.",tag:"HOT",tagIcon:"🌶️"}
+      {id:7,name:"Гедза",price:290,meta:"6 шт",img:"https://images.unsplash.com/photo/1617093727343-374698b1b08d?w=600",desc:"Курица, свинина, овощи.",tag:"",tagIcon:""},
+      {id:8,name:"Спайси эдамаме",price:190,meta:"120 г",img:"https://images.unsplash.com/photo/1609501676725-7186f017a4b7?w=600",desc:"Острый соус, кунжут.",tag:"HOT",tagIcon:"🌶️"}
     ],
     drinks: [
-      {id:9,name:"Coca-Cola",price:120,meta:"0.5 л",img:"https://images.unsplash.com/photo-1625772299848-391b6a87d281?w=600",desc:"Холодная, газированная.",tag:"",tagIcon:""},
-      {id:10,name:"ФRESH-лимонад",price:180,meta:"0.4 л",img:"https://images.unsplash.com/photo-1625772299848-391b6a87d281?w=600",desc:"Лимон, мята, лёд.",tag:"NEW",tagIcon:"🔥"}
+      {id:9,name:"Coca-Cola",price:120,meta:"0.5 л",img:"https://images.unsplash.com/photo/1625772299848-391b6a87d281?w=600",desc:"Холодная, газированная.",tag:"",tagIcon:""},
+      {id:10,name:"ФRESH-лимонад",price:180,meta:"0.4 л",img:"https://images.unsplash.com/photo/1625772299848-391b6a87d281?w=600",desc:"Лимон, мята, лёд.",tag:"NEW",tagIcon:"🔥"}
     ]
   };
 
@@ -445,6 +487,7 @@
     closeAll();
   }
 
+  /* ========== 2. PUSH-УВЕДОМЛЕНИЯ ========== */
   function sendOrder(){
     const mainItems = cart.filter(i=>!i.isExtra);
     if(mainItems.length===0) return;
@@ -458,7 +501,79 @@
       total:document.getElementById('total-val').innerText,
       user:userData
     }));
+    // push-уведомления
+    tg.showPopup({
+      title: 'Заказ принят!',
+      message: 'Мы уже начали готовить. Следите за статусом в уведомлениях.',
+      buttons: [{type: 'ok', text: 'OK'}]
+    });
+    // таймер-обновление статуса
+    setTimeout(() => {
+      tg.showPopup({
+        title: 'Курьер в пути',
+        message: 'Ожидайте через 25 минут',
+        buttons: [{type: 'ok', text: 'OK'}]
+      });
+    }, 15000);
   }
+
+  // ========== 3. ГОЛОСОВОЙ ПОИСК ==========
+  const searchInput = document.getElementById('search-input');
+  const voiceBtn = document.getElementById('voice-btn');
+  if ('webkitSpeechRecognition' in window) {
+    const recognition = new webkitSpeechRecognition();
+    recognition.lang = 'ru-RU';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    voiceBtn.onclick = () => {
+      recognition.start();
+      voiceBtn.style.color = 'var(--accent)';
+    };
+    recognition.onresult = (e) => {
+      const word = e.results[0][0].transcript.toLowerCase();
+      searchInput.value = word;
+      filterProducts(word);
+      voiceBtn.style.color = '';
+      tg.HapticFeedback.notificationOccurred('success');
+    };
+  }
+
+  // ========== 4. ПОИСК + ФИЛЬТРЫ ПО СОСТАВУ ==========
+  searchInput.addEventListener('input', e => filterProducts(e.target.value.toLowerCase()));
+  function filterProducts(q){
+    const all = Object.values(menu).flat();
+    const filtered = all.filter(p =>
+      p.name.toLowerCase().includes(q) ||
+      p.desc.toLowerCase().includes(q) ||
+      (q.includes('острое') && p.tag==='HOT') ||
+      (q.includes('веган') && p.desc.includes('овощи'))
+    );
+    renderFiltered(filtered.length ? filtered : all);
+  }
+  function renderFiltered(list){
+    document.getElementById('grid').innerHTML = list.map((p,i)=>`
+      <div class="item" style="animation-delay:${i*0.1}s" onclick="showDetails(${p.id})">
+        ${p.tag?`<div class="badge"><span class="badge-icon">${p.tagIcon}</span><span>${p.tag}</span></div>`:''}
+        <img src="${p.img}" class="item-img">
+        <div style="font-weight:800;font-size:15px">${p.name}</div>
+        <div style="font-size:11px;color:var(--text-gray)">${p.meta}</div>
+        <div class="price-row">
+          <span class="p-val">${p.price}₽</span>
+        </div>
+      </div>`).join('');
+  }
+
+  // ========== 5. ПЕРЕКЛЮЧАТЕЛЬ ТЕМЫ ==========
+  const themeToggle = document.getElementById('theme-toggle');
+  const saved = localStorage.getItem('yakuza-theme') || 'light';
+  document.body.dataset.theme = saved;
+  themeToggle.checked = saved === 'dark';
+  themeToggle.addEventListener('change', () => {
+    const newTheme = themeToggle.checked ? 'dark' : 'light';
+    document.body.dataset.theme = newTheme;
+    localStorage.setItem('yakuza-theme', newTheme);
+    tg.HapticFeedback.impactOccurred('light');
+  });
 
   // === плавающая корзина ===
   function showMiniCart(){
