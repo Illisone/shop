@@ -23,11 +23,12 @@
   *{box-sizing:border-box;-webkit-font-smoothing:antialiased;}
   body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Helvetica Neue',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;scroll-behavior:smooth;}
 
-  /* шапка */
-  .header{position:fixed;top:0;left:0;right:0;z-index:1000;background:var(--glass);backdrop-filter:blur(20px);border-bottom:0.5px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;}
-  .logo{font-weight:900;font-size:22px;letter-spacing:-1px;}
-  .cart-icon{position:relative;width:38px;height:38px;border-radius:50%;background:#222;display:grid;place-items:center;font-size:20px;border:none;color:var(--text);}
+  /* шапка: лого слева, аватарка → личный кабинет, корзина отдельно */
+  .header{position:fixed;top:0;left:0;right:0;z-index:1000;background:var(--glass);backdrop-filter:blur(20px);border-bottom:0.5px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:12px;}
+  .logo{font-weight:900;font-size:22px;letter-spacing:-1px;margin-right:auto;}
+  .cart-icon{position:relative;width:38px;height:38px;border-radius:50%;background:#222;display:grid;place-items:center;font-size:20px;border:none;color:var(--text);cursor:pointer;}
   .cart-badge{position:absolute;top:-2px;right:-2px;background:var(--accent);color:#fff;font-size:10px;min-width:18px;height:18px;border-radius:9px;display:none;align-items:center;justify-content:center;font-weight:800;border:2px solid var(--bg);}
+  .user-avatar{width:36px;height:36px;border-radius:50%;border:2px solid var(--accent);object-fit:cover;cursor:pointer;}
 
   /* промо */
   .hero-slider{position:relative;width:calc(100% - 40px);height:180px;margin:20px auto;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
@@ -68,7 +69,7 @@
   .pay-opt{flex:1;text-align:center;padding:12px;font-size:12px;font-weight:700;border-radius:12px;color:var(--text-gray);transition:background .2s,color .2s;}
   .pay-opt.active{background:#333;color:var(--accent-light);}
 
-  /* крутая корзина: +/- кол-во + промо + итог */
+  /* крутая корзина: +/- кол-во + промо + итог + доп товары */
   .cart-item{display:flex;align-items:center;gap:12px;background:#1c1c1e;border-radius:20px;padding:14px;margin-bottom:10px;animation:slideUp .3s ease;}
   .cart-info{flex:1;}
   .cart-controls{display:flex;align-items:center;gap:8px;}
@@ -81,6 +82,11 @@
   .promo-btn{background:#222;color:var(--accent-light);border:none;border-radius:12px;padding:0 16px;font-weight:700;}
   .total-row{display:flex;justify-content:space-between;align-items:center;margin-top:15px;font-size:17px;font-weight:800;}
   .delivery-free{color:var(--accent-light);font-size:13px;margin-top:4px;}
+  .extras-title{font-size:16px;font-weight:800;margin:20px 0 10px;}
+  .extras-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+  .extra-card{background:#1c1c1e;border:1px solid #333;border-radius:14px;padding:10px;text-align:center;font-size:12px;font-weight:600;cursor:pointer;transition:background .2s;}
+  .extra-card:active{background:#222;}
+  .extra-icon{font-size:20px;margin-bottom:4px;}
   @keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
   </style>
 </head>
@@ -93,6 +99,7 @@
     🛒
     <span class="cart-badge" id="cart-badge">0</span>
   </button>
+  <img id="user-avatar" class="user-avatar" src="https://via.placeholder.com/100" alt="" onclick="openProfile()">
 </div>
 
 <div class="main-content">
@@ -124,6 +131,8 @@
 
 <!-- шторки -->
 <div class="overlay" id="overlay" onclick="closeAll()"></div>
+
+<!-- детали товара -->
 <div id="details-sheet" class="sheet">
   <div class="sheet-handle"></div>
   <img id="d-img" style="width:100%;border-radius:22px;height:260px;object-fit:cover;">
@@ -133,6 +142,7 @@
   <button class="btn-main" onclick="addToCartFromDetails()">Добавить в корзину</button>
 </div>
 
+<!-- корзина -->
 <div id="cart-sheet" class="sheet">
   <div class="sheet-handle"></div>
   <h2 style="margin:0 0 20px;font-weight:900;">Ваш заказ</h2>
@@ -140,6 +150,10 @@
   <div id="cart-empty" style="text-align:center;padding:30px;color:var(--text-gray);display:none;">Корзина пуста</div>
 
   <div id="cart-ui">
+    <!-- блок «Добавить к заказу?» -->
+    <div class="extras-title">Добавить к заказу?</div>
+    <div class="extras-grid" id="extras-grid"></div>
+
     <!-- промо-код -->
     <div class="promo-row">
       <input type="text" class="promo-input" id="promo-input" placeholder="Промокод">
@@ -167,10 +181,33 @@
   </div>
 </div>
 
+<!-- личный кабинет -->
+<div id="profile-sheet" class="sheet">
+  <div class="sheet-handle"></div>
+  <h2 style="margin:0 0 20px;font-weight:900;">Личный кабинет</h2>
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+    <img id="profile-avatar" class="user-avatar" src="https://via.placeholder.com/100" alt="">
+    <div>
+      <div id="profile-name" style="font-weight:800;font-size:18px;">—</div>
+      <div id="profile-phone" style="color:var(--text-gray);font-size:14px;">—</div>
+    </div>
+  </div>
+  <div style="margin-bottom:15px;">
+    <div style="font-size:14px;color:var(--text-gray);">Бонусы</div>
+    <div id="profile-bonus" style="font-size:24px;font-weight:800;">1 250 ₽</div>
+  </div>
+  <div style="margin-bottom:20px;">
+    <div style="font-size:14px;color:var(--text-gray);">Адрес доставки</div>
+    <input type="text" id="profile-address" class="input-style" placeholder="Улица, дом, квартира">
+  </div>
+  <button class="btn-main" onclick="saveProfile()">Сохранить</button>
+</div>
+
 <script>
   let tg = window.Telegram.WebApp; tg.expand();
   let cart = [], curProd = null, payMethod = 'cash', currentTab = 'rolls';
   let promoApplied = false;
+  let userData = {name:'—',phone:'—',address:'',bonus:1250};
 
   const menu = {
     rolls: [
@@ -192,6 +229,12 @@
       {id:10,name:"ФRESH-лимонад",price:180,meta:"0.4 л",img:"https://images.unsplash.com/photo-1625772299848-391b6a87d281?w=600",desc:"Лимон, мята, лёд.",tag:"NEW"}
     ]
   };
+
+  const extras = [
+    {id:'wasabi',name:'Васаби',price:30,icon:'🌶️'},
+    {id:'sticks',name:'Палочки',price:40,icon:'🥢'},
+    {id:'soya',name:'Соевый соус',price:35,icon:'🧂'}
+  ];
 
   const heroImages = [
     {img:"https://images.unsplash.com/photo-1553621042-f6e147245754?w=1200",txt:"Подарок к заказу от 2000₽"},
@@ -281,7 +324,21 @@
     const badge=document.getElementById('cart-badge');
     badge.innerText=c; badge.style.display=c?'flex':'none';
 
-    const subtotal = cart.reduce((s,i)=>s+i.price*(i.qty||1),0);
+    // --- блок «Добавить к заказу?» ---
+    const extrasGrid = document.getElementById('extras-grid');
+    extrasGrid.innerHTML = extras.map(e=>`
+      <div class="extra-card" onclick="addExtra('${e.id}')">
+        <div class="extra-icon">${e.icon}</div>
+        <div>${e.name}</div>
+        <div style="color:var(--accent-light);font-weight:700;">+${e.price}₽</div>
+      </div>`).join('');
+
+    // --- подсчёт итога ---
+    let subtotal = cart.reduce((s,i)=>s+i.price*(i.qty||1),0);
+    let extrasTotal = 0;
+    cart.filter(i=>i.isExtra).forEach(i=>extrasTotal+=i.price*(i.qty||1));
+    subtotal+=extrasTotal;
+
     const freeDeliveryThreshold = 900;
     let delivery = 0;
     if(!promoApplied && subtotal<freeDeliveryThreshold) delivery = 150;
@@ -294,14 +351,14 @@
     else freeEl.innerText=`Доставка 150₽ (бесплатно от ${freeDeliveryThreshold}₽)`;
 
     const list=document.getElementById('cart-items');
-    if(cart.length===0){
+    if(cart.filter(i=>!i.isExtra).length===0){
       document.getElementById('cart-empty').style.display='block';
       document.getElementById('cart-ui').style.display='none';
       list.innerHTML='';
     }else{
       document.getElementById('cart-empty').style.display='none';
       document.getElementById('cart-ui').style.display='block';
-      list.innerHTML=cart.map(i=>`
+      list.innerHTML=cart.filter(i=>!i.isExtra).map(i=>`
         <div class="cart-item">
           <div class="cart-info"><b>${i.name}</b><br><small>${i.price}₽</small></div>
           <div class="cart-controls">
@@ -315,22 +372,54 @@
     }
   }
 
+  function addExtra(id){
+    const item = extras.find(e=>e.id===id);
+    const exist = cart.find(x=>x.id===id);
+    if(exist) exist.qty = (exist.qty||1)+1;
+    else cart.push({...item,qty:1,isExtra:true});
+    updateCartUI();
+    tg.HapticFeedback.impactOccurred('light');
+  }
+
   function setPay(m,el){ payMethod=m; document.querySelectorAll('.pay-opt').forEach(o=>o.classList.remove('active')); el.classList.add('active'); }
 
   function closeAll(){ document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('active')); document.getElementById('overlay').classList.remove('active'); }
 
   function openSheet(id){ document.getElementById(id).classList.add('active'); document.getElementById('overlay').classList.add('active'); }
 
+  function openCart(){ openSheet('cart-sheet'); }
+  function openProfile(){
+    // заполняем данные из Telegram
+    const user = tg.initDataUnsafe?.user;
+    if(user){
+      userData.name = user.first_name||'';
+      userData.phone = user.username ? '@'+user.username : (user.id||'');
+      if(user.photo_url) document.getElementById('user-avatar').src = user.photo_url;
+    }
+    document.getElementById('profile-name').innerText = userData.name;
+    document.getElementById('profile-phone').innerText = userData.phone;
+    document.getElementById('profile-bonus').innerText = userData.bonus+' ₽';
+    document.getElementById('profile-address').value = userData.address;
+    openSheet('profile-sheet');
+  }
+
+  function saveProfile(){
+    userData.address = document.getElementById('profile-address').value;
+    tg.showAlert('Сохранено!');
+    closeAll();
+  }
+
   function sendOrder(){
-    if(cart.length===0) return;
-    const addr = document.getElementById('address').value.trim();
-    if(!addr) return tg.showAlert("Введите адрес доставки!");
+    if(cart.filter(i=>!i.isExtra).length===0) return;
+    const addr = userData.address || document.getElementById('address').value.trim();
+    if(!addr) return tg.showAlert("Укажите адрес доставки!");
     tg.sendData(JSON.stringify({
       order:cart,
       address:addr,
       payment:payMethod,
       promo:promoApplied,
-      total:document.getElementById('total-val').innerText
+      total:document.getElementById('total-val').innerText,
+      user:userData
     }));
   }
 
