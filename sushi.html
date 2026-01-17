@@ -6,7 +6,6 @@
   <meta name="color-scheme" content="dark">
   <title>YAKUZA Суши</title>
 
-  <!-- Telegram + жесты -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
 
@@ -235,22 +234,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const menu = {
     rolls: [
-      {id:1,name:"Мечта кота",price:1530,meta:"32 шт | 1.1 кг",img:"https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=600",desc:"Филадельфия огурец, Филадельфия бекон, Темпура чикен, Темпура тамаго лосось.",tag:"HOT",tagIcon:"🌶️"},
-      {id:2,name:"Сет Зимний",price:1945,meta:"64 шт | 2.2 кг",img:"https://images.unsplash.com/photo-1583623025817-d180a2221d0a?w=600",desc:"Огромный сет для большой компании.",tag:"NEW",tagIcon:"🔥"},
-      {id:3,name:"Филадельфия",price:650,meta:"8 шт | 280 г",img:"https://images.unsplash.com/photo-1553621042-f6e147245754?w=600",desc:"Классический ролл со свежим лососем.",tag:"",tagIcon:""},
-      {id:4,name:"Калифорния",price:590,meta:"8 шт | 250 г",img:"https://images.unsplash.com/photo-1559466273-d95e72debaf8?w=600",desc:"Снежный краб, огурец и икра тобико.",tag:"",tagIcon:""}
+      {id:1,name:"Мечта кота",price:1530,meta:"32 шт | 1.1 кг",img:"https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=600&random=1",desc:"Филадельфия огурец, Филадельфия бекон, Темпура чикен, Темпура тамаго лосось.",tag:"HOT",tagIcon:"🌶️"},
+      {id:2,name:"Сет Зимний",price:1945,meta:"64 шт | 2.2 кг",img:"https://images.unsplash.com/photo-1583623025817-d180a2221d0a?w=600&random=2",desc:"Огромный сет для большой компании.",tag:"NEW",tagIcon:"🔥"},
+      {id:3,name:"Филадельфия",price:650,meta:"8 шт | 280 г",img:"https://images.unsplash.com/photo-1553621042-f6e147245754?w=600&random=3",desc:"Классический ролл со свежим лососем.",tag:"",tagIcon:""},
+      {id:4,name:"Калифорния",price:590,meta:"8 шт | 250 г",img:"https://images.unsplash.com/photo-1559466273-d95e72debaf8?w=600&random=4",desc:"Снежный краб, огурец и икра тобико.",tag:"",tagIcon:""}
     ],
     wok: [
-      {id:5,name:"Курица вок",price:490,meta:"320 г",img:"https://images.unsplash.com/photo-1625938146369-adc83368bda7?w=600",desc:"Курица, овощи, соус терияки.",tag:"",tagIcon:""},
-      {id:6,name:"Говядина вок",price:590,meta:"320 г",img:"https://images.unsplash.com/photo-1625938146369-adc83368bda7?w=600",desc:"Говядина, овощи, соус чили.",tag:"HOT",tagIcon:"🌶️"}
+      {id:5,name:"Курица вок",price:490,meta:"320 г",img:"https://images.unsplash.com/photo-1625938146369-adc83368bda7?w=600&random=5",desc:"Курица, овощи, соус терияки.",tag:"",tagIcon:""},
+      {id:6,name:"Говядина вок",price:590,meta:"320 г",img:"https://images.unsplash.com/photo-1625938146369-adc83368bda7?w=600&random=6",desc:"Говядина, овощи, соус чили.",tag:"HOT",tagIcon:"🌶️"}
     ],
     snacks: [
-      {id:7,name:"Гедза",price:290,meta:"6 шт",img:"https://images.unsplash.com/photo-1617093727343-374698b1b08d?w=600",desc:"Курица, свинина, овощи.",tag:"",tagIcon:""},
-      {id:8,name:"Спайси эдамаме",price:190,meta:"120 г",img:"https://images.unsplash.com/photo-1609501676725-7186f017a4b7?w=600",desc:"Острый соус, кунжут.",tag:"HOT",tagIcon:"🌶️"}
+      {id:7,name:"Гедза",price:290,meta:"6 шт",img:"https://images.unsplash.com/photo-1617093727343-374698b1b08d?w=600&random=7",desc:"Курица, свинина, овощи.",tag:"",tagIcon:""},
+      {id:8,name:"Спайси эдамаме",price:190,meta:"120 г",img:"https://images.unsplash.com/photo-1609501676725-7186f017a4b7?w=600&random=8",desc:"Острый соус, кунжут.",tag:"HOT",tagIcon:"🌶️"}
     ],
     drinks: [
-      {id:9,name:"Coca-Cola",price:120,meta:"0.5 л",img:"https://images.unsplash.com/photo-1625772299848-391b6a87d281?w=600",desc:"Холодная, газированная.",tag:"",tagIcon:""},
-      {id:10,name:"ФRESH-лимонад",price:180,meta:"0.4 л",img:"https://images.unsplash.com/photo-1625772299848-391b6a87d281?w=600",desc:"Лимон, мята, лёд.",tag:"NEW",tagIcon:"🔥"}
+      {id:9,name:"Coca-Cola",price:120,meta:"0.5 л",img:"https://images.unsplash.com/photo-1625772299848-391b6a87d281?w=600&random=9",desc:"Холодная, газированная.",tag:"",tagIcon:""},
+      {id:10,name:"ФRESH-лимонад",price:180,meta:"0.4 л",img:"https://images.unsplash.com/photo-1625772299848-391b6a87d281?w=600&random=10",desc:"Лимон, мята, лёд.",tag:"NEW",tagIcon:"🔥"}
     ]
   };
 
@@ -261,9 +260,9 @@ document.addEventListener('DOMContentLoaded', () => {
   ];
 
   const heroImages = [
-    {img:"https://images.unsplash.com/photo-1553621042-f6e147245754?w=1200",txt:"Подарок к заказу от 2000₽"},
-    {img:"https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=1200",txt:"Скидка -15% на самовывоз"},
-    {img:"https://images.unsplash.com/photo-1611143669185-af224c5e3252?w=1200",txt:"Новый сет «Самурай»"}
+    {img:"https://images.unsplash.com/photo-1553621042-f6e147245754?w=1200&random=101",txt:"Подарок к заказу от 2000₽"},
+    {img:"https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=1200&random=102",txt:"Скидка -15% на самовывоз"},
+    {img:"https://images.unsplash.com/photo-1611143669185-af224c5e3252?w=1200&random=103",txt:"Новый сет «Самурай»"}
   ];
 
   /* ========== 2. UI-функции ========== */
@@ -307,9 +306,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if(!item)return;
     curProd = item;
     document.getElementById('d-img').src = item.img;
-    document.getElementById('d-title').innerText = item.name;
-    document.getElementById('d-meta').innerText = item.meta;
-    document.getElementById('d-desc').innerText = item.desc;
+    document.getElementById('d-title').textContent = item.name || '';
+    document.getElementById('d-meta').textContent = item.meta || '';
+    document.getElementById('d-desc').textContent = item.desc || '';
     openSheet('details-sheet');
     tg.HapticFeedback.impactOccurred('medium');
   }
@@ -420,14 +419,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if(user){
       userData.name = user.first_name||'';
       userData.phone = user.username ? '@'+user.username : (user.id||'');
-      if(user.photo_url) {
-        document.getElementById('user-avatar').src = user.photo_url;
-        document.getElementById('profile-avatar').src = user.photo_url;
+      if(user?.photo_url) {                               // защита от null
+        document.getElementById('user-avatar').src = user.photo_url + '?random=' + Date.now();
+        document.getElementById('profile-avatar').src = user.photo_url + '?random=' + Date.now();
       }
     }
-    document.getElementById('profile-name').innerText = userData.name;
-    document.getElementById('profile-phone').innerText = userData.phone;
-    document.getElementById('profile-bonus').innerText = userData.bonus.toLocaleString()+' ₽';
+    document.getElementById('profile-name').textContent = userData.name;
+    document.getElementById('profile-phone').textContent = userData.phone;
+    document.getElementById('profile-bonus').textContent = userData.bonus.toLocaleString()+' ₽';
     document.getElementById('profile-address').value = userData.address;
     openSheet('profile-sheet');
   }
