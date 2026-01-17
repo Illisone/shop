@@ -83,13 +83,14 @@ body {
 }
 
 /* иконка поиска полностью убирается из потока, когда поле открыто */
-.search-trigger {
-    font-size: 22px;
-    cursor: pointer;
-    color: var(--text-gray);
-    transition: color .2s;
-    position: relative;          /* чтобы не смещать соседей */
+.search-trigger{
+  font-size:22px;
+  cursor:pointer;
+  color:var(--text-gray);
+  transition:color .2s;
 }
+.search-trigger.active{color:var(--text);}
+
 .search-line.show ~ .top-right .search-trigger {
     position: absolute;          /* убираем из потока */
     visibility: hidden;          /* исчезает полностью */
@@ -106,30 +107,30 @@ body {
 }
 
 /* ---------- 2. выезжающая строка поиска  ---------- */
-.search-line {
-    position: absolute;
-    top: 10px;
-    left: 140px;                 /* ← чуть правее логотипа */
-    right: 64px;                 /* ← до аватара (20+32+12) */
-    height: 44px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--glass);
-    backdrop-filter: blur(20px);
-    border: 0.5px solid var(--border);
-    border-radius: var(--radius);
-    padding: 0 12px;
-    opacity: 0;
-    pointer-events: none;
-    transform: translateX(calc(100% + 20px));
-    transition: transform .35s cubic-bezier(.4, 0, .2, 1), opacity .35s;
-    z-index: 1;                  /* под логотипом и аватаром */
+.search-line{
+  position:absolute;
+  top:10px;
+  left:140px;
+  right:64px;
+  height:44px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  background:var(--glass);
+  backdrop-filter:blur(20px);
+  border:0.5px solid var(--border);
+  border-radius:var(--radius);
+  padding:0 12px;
+  opacity:0;
+  pointer-events:none;
+  transform:translateX(calc(100% + 20px));
+  transition:transform .35s cubic-bezier(.4,0,.2,1),opacity .35s;
+  z-index:1;
 }
-.search-line.show {
-    transform: translateX(0);
-    opacity: 1;
-    pointer-events: auto;
+.search-line.show{
+  transform:translateX(0);
+  opacity:1;
+  pointer-events:auto;
 }
 
 #search-input {
