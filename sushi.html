@@ -11,22 +11,19 @@
 </head>
 <body>
 
-<!-- ЛОГО в островке + бонусы + аватар -->
+<!-- ЛОГО в островке + иконка поиска + аватар -->
 <div class="top-line">
   <div class="logo-island">YAKUZA</div>
-  <div class="bals-user">
-    <div class="bals"><span class="bals-icon">💎</span><span id="bals-val">1 250</span></div>
+  <div class="top-right">
+    <div class="search-trigger" id="search-trigger" title="Поиск">🔍</div>
     <img id="user-avatar" class="user-avatar" src="https://via.placeholder.com/100" alt="" onclick="openProfile()">
   </div>
 </div>
 
-<!-- ПОИСК (сворачивается в иконку) -->
-<div class="search-wrapper" id="search-wrapper">
-  <div class="search-icon" id="search-icon" title="Поиск">🔍</div>
-  <div class="search-bar" id="search-bar">
-    <input id="search-input" type="text" placeholder="Поиск товаров">
-    <button class="search-close" id="search-close">✕</button>
-  </div>
+<!-- ПОИСК (выезжает влево) -->
+<div class="search-line" id="search-line">
+  <input id="search-input" type="text" placeholder="Поиск товаров">
+  <button class="search-close" id="search-close">✕</button>
 </div>
 
 <div class="main-content">
@@ -153,12 +150,12 @@ const menu = {
     {id:4,name:"Калифорния",price:590,meta:"8 шт | 250 г",img:"https://images.unsplash.com/photo-1559466273-d95e72debaf8?w=600",desc:"Снежный краб, огурец и икра тобико.",tag:"",tagIcon:""}
   ],
   wok: [
-    {id:5,name:"Курица вок",price:490,meta:"320 г",img:"https://images.unsplash.com/photo-1625938146369-adc83368bda7?w=600",desc:"Курица, овощи, соус терияки.",tag:"",tagIcon:""},
+    {id:5,name:"Курица вок",price:490,meta:"320 г",img:"https://images.unsplash.com/photo/1625938146369-adc83368bda7?w=600",desc:"Курица, овощи, соус терияки.",tag:"",tagIcon:""},
     {id:6,name:"Говядина вок",price:590,meta:"320 г",img:"https://images.unsplash.com/photo-1625938146369-adc83368bda7?w=600",desc:"Говядина, овощи, соус чили.",tag:"HOT",tagIcon:"🌶️"}
   ],
   snacks: [
-    {id:7,name:"Гедза",price:290,meta:"6 шт",img:"https://images.unsplash.com/photo-1617093727343-374698b1b08d?w=600",desc:"Курица, свинина, овощи.",tag:"",tagIcon:""},
-    {id:8,name:"Спайси эдамаме",price:190,meta:"120 г",img:"https://images.unsplash.com/photo-1609501676725-7186f017a4b7?w=600",desc:"Острый соус, кунжут.",tag:"HOT",tagIcon:"🌶️"}
+    {id:7,name:"Гедза",price:290,meta:"6 шт",img:"https://images.unsplash.com/photo/1617093727343-374698b1b08d?w=600",desc:"Курица, свинина, овощи.",tag:"",tagIcon:""},
+    {id:8,name:"Спайси эдамаме",price:190,meta:"120 г",img:"https://images.unsplash.com/photo/1609501676725-7186f017a4b7?w=600",desc:"Острый соус, кунжут.",tag:"HOT",tagIcon:"🌶️"}
   ],
   drinks: [
     {id:9,name:"Coca-Cola",price:120,meta:"0.5 л",img:"https://images.unsplash.com/photo-1625772299848-391b6a87d281?w=600",desc:"Холодная, газированная.",tag:"",tagIcon:""},
@@ -269,7 +266,8 @@ function applyPromo(){
 
 function updateCartUI(){
   const c=cart.reduce((s,i)=>s+(i.qty||1),0);
-  document.getElementById('bals-val').innerText = userData.bonus.toLocaleString();
+  // бонусы теперь только в профиле
+  // document.getElementById('bals-val').innerText = userData.bonus.toLocaleString();
 
   const sub = cart.filter(i=>!i.isExtra).reduce((s,i)=>s+i.price*(i.qty||1),0);
   document.getElementById('mini-sum').innerText = sub+'₽';
@@ -350,47 +348,19 @@ function saveProfile(){
   closeAll();
 }
 
-function sendOrder(){
-  const mainItems = cart.filter(i=>!i.isExtra);
-  if(mainItems.length===0) return;
-  const addr = userData.address || document.getElementById('address').value.trim();
-  if(!addr) return tg.showAlert("Укажите адрес доставки!");
-  tg.sendData(JSON.stringify({
-    order:cart,
-    address:addr,
-    payment:payMethod,
-    promo:promoApplied,
-    total:document.getElementById('total-val').innerText,
-    user:userData
-  }));
-  tg.showPopup({
-    title: 'Заказ принят!',
-    message: 'Мы уже начали готовить. Следите за статусом в уведомлениях.',
-    buttons: [{type: 'ok', text: 'OK'}]
-  });
-  setTimeout(() => {
-    tg.showPopup({
-      title: 'Курьер в пути',
-      message: 'Ожидайте через 25 минут',
-      buttons: [{type: 'ok', text: 'OK'}]
-    });
-  }, 15000);
-}
+/* ----------  ПОИСК (выезжает влево)  ---------- */
+const searchTrigger = document.getElementById('search-trigger');
+const searchLine    = document.getElementById('search-line');
+const searchInput   = document.getElementById('search-input');
+const searchClose   = document.getElementById('search-close');
 
-/* ==========  ПОИСК (без голоса)  ========== */
-const searchWrapper = document.getElementById('search-wrapper');
-const searchIcon   = document.getElementById('search-icon');
-const searchBar    = document.getElementById('search-bar');
-const searchInput  = document.getElementById('search-input');
-const searchClose  = document.getElementById('search-close');
-
-searchIcon.addEventListener('click', () => {
-  searchWrapper.classList.add('open');
+searchTrigger.addEventListener('click', () => {
+  searchLine.classList.add('show');
   searchInput.focus();
 });
 searchClose.addEventListener('click', (e) => {
   e.stopPropagation();
-  searchWrapper.classList.remove('open');
+  searchLine.classList.remove('show');
   searchInput.value = '';
   filterProducts('');
 });
@@ -419,7 +389,7 @@ function renderFiltered(list){
     </div>`).join('');
 }
 
-/* ==========  ТЕМА  ========== */
+/* ----------  ТЕМА  ---------- */
 const themeToggle = document.getElementById('theme-toggle');
 const saved = localStorage.getItem('yakuza-theme') || 'light';
 document.body.dataset.theme = saved;
@@ -431,7 +401,7 @@ themeToggle.addEventListener('change', () => {
   tg.HapticFeedback.impactOccurred('light');
 });
 
-/* ==========  ПЛАВАЮЩАЯ КОРЗИНА  ========== */
+/* ----------  ПЛАВАЮЩАЯ КОРЗИНА  ---------- */
 function showMiniCart(){
   const mc = document.getElementById('mini-cart');
   mc.style.display='flex';
@@ -441,7 +411,7 @@ function hideMiniCart(){
   document.getElementById('mini-cart').style.display='none';
 }
 
-/* ==========  СВАЙП-ЗАКРЫТИЕ  ========== */
+/* ----------  СВАЙП-ЗАКРЫТИЕ  ---------- */
 document.querySelectorAll('.sheet').forEach(sh=>{
   const h = new Hammer(sh);
   h.on('swipedown', closeAll);
