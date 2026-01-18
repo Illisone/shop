@@ -63,7 +63,9 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 10px 20px 0;
-    position: relative;
+    position: sticky;
+    z-index: 100;
+    top: 0;
 }
 
 .logo-island {
@@ -88,13 +90,15 @@ body {
 }
 /* ---------- поиск-островок: круглый → закруглённая плашка ---------- */
 /* === поиск-островок: круглый → тянется влево === */
+/* === поиск-островок: выезжает влево, лупа не двигается === */
 .search-form {
   position: relative;
-  width: 44px;
+  width: 44px;                /* круг */
   height: 44px;
   margin-left: auto;          /* прижато к правому краю */
   flex-shrink: 0;
   transition: width .35s cubic-bezier(.4,0,.2,1);
+  transform-origin: right center; /* растём влево */
 }
 
 .search-input {
@@ -112,8 +116,9 @@ body {
   font-size: 14px;
   color: var(--text);
   pointer-events: none;
-  transform: translateX(calc(100% - 44px)); /* спрятана вправо */
+  transform: translateX(calc(200px - 44px)); /* спрятана вправо */
   transition: transform .35s cubic-bezier(.4,0,.2,1);
+  transform-origin: right center;
 }
 
 .search-btn {
@@ -159,18 +164,21 @@ body {
   transform: translateX(0);   /* поле выезжает */
   pointer-events: auto;
 }
-/* крестик (длиннее, чтобы видно) */
-.search-form.open .search-btn::before {
-  border: none;
-  width: 20px;                /* ← было 18 px */
+
+/* ровный крестик 22 px, центр – середина кнопки */
+.search-form.open .search-btn::before,
+.search-form.open .search-btn::after {
+  width: 22px;
   height: 2px;
   background: var(--text);
+  left: 50%;
+  top: 50%;
+  margin: 0;
+}
+.search-form.open .search-btn::before {
   transform: translate(-50%,-50%) rotate(45deg);
 }
 .search-form.open .search-btn::after {
-  width: 20px;                /* ← было 18 px */
-  height: 2px;
-  background: var(--text);
   transform: translate(-50%,-50%) rotate(-45deg);
 }
 
