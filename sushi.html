@@ -128,22 +128,22 @@
         <input type="text" id="profile-address" class="input-style" placeholder="Улица, дом, квартира">
       </div>
       <div style="margin-top:20px; display: flex; flex-direction: column; gap: 15px;">
-  <div style="display: flex; justify-content: space-between; align-items: center;">
-    <div style="font-size:14px; color:var(--text-gray);">Тёмная тема</div>
-    <label class="theme-switch">
-      <input type="checkbox" id="theme-toggle"> 
-      <span class="slider theme-slider"></span> <span class="labels">🌙</span>
-    </label>
-  </div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div style="font-size:14px; color:var(--text-gray);">Тёмная тема</div>
+          <label class="theme-switch">
+            <input type="checkbox" id="theme-toggle">
+            <span class="slider theme-slider"></span> <span class="labels">🌙</span>
+          </label>
+        </div>
 
-  <div style="display: flex; justify-content: space-between; align-items: center;">
-    <div style="font-size:14px; color:var(--text-gray);">Виброотклик</div>
-    <label class="theme-switch">
-      <input type="checkbox" id="haptic-toggle"> 
-      <span class="slider haptic-slider"></span> <span class="labels">📳</span>
-    </label>
-  </div>
-</div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div style="font-size:14px; color:var(--text-gray);">Виброотклик</div>
+          <label class="theme-switch">
+            <input type="checkbox" id="haptic-toggle">
+            <span class="slider haptic-slider"></span> <span class="labels">📳</span>
+          </label>
+        </div>
+      </div>
     </div>
     <button class="btn-main" onclick="saveProfile()">Сохранить</button>
   </div>
@@ -206,17 +206,31 @@
         slides[heroIndex].classList.add('active');
       }, 3000);
     }
+    function triggerHaptic(type = 'light') {
+      // Если настройки говорят "выключено" — ничего не делаем
+      if (typeof settings !== 'undefined' && !settings.hapticEnabled) return;
 
+      try {
+        if (window.tg && tg.HapticFeedback) {
+          if (type === 'light') tg.HapticFeedback.impactOccurred('light');
+          if (type === 'medium') tg.HapticFeedback.impactOccurred('medium');
+          if (type === 'success') tg.HapticFeedback.notificationOccurred('success');
+        }
+      } catch (e) {
+        console.error("Haptic error:", e);
+      }
+    }
     function switchTab(tab) {
       currentTab = tab;
+
+      // 1. Убираем подсветку со всех кнопок и даем её нажатой
       document.querySelectorAll('.bottom-tab').forEach(t => t.classList.remove('active'));
       if (event && event.currentTarget) event.currentTarget.classList.add('active');
 
-      // Вибрируем только если разрешено в настройках
-      if (settings.hapticEnabled) {
-        tg.HapticFeedback.impactOccurred('light');
-      }
+      // 2. ВМЕСТО КУЧИ СТРОК С IF — ОДНА КОМАНДА:
+      triggerHaptic('light');
 
+      // 3. Перерисовываем экран
       render();
     }
 
@@ -242,7 +256,7 @@
       document.getElementById('d-meta').innerText = item.meta;
       document.getElementById('d-desc').innerText = item.desc;
       openSheet('details-sheet');
-      tg.HapticFeedback.impactOccurred('medium');
+      triggerHaptic('medium');
     }
 
     function addToCartFromDetails() {
@@ -259,56 +273,40 @@
       const item = cart.find(x => x.id == id); // Используем ==
       if (!item) return;
       item.qty = Math.max(1, (item.qty || 1) + delta);
-      if (settings.hapticEnabled) tg.HapticFeedback.impactOccurred('light');
+      triggerHaptic('light');
       updateCartUI();
     }
 
     function removeItem(id) {
-      const btn = event.target;
-      const itemElement = btn.closest('.cart-item');
-      if (itemElement && !itemElement.classList.contains('cart-item-dissolve')) {
-        itemElement.style.maxHeight = itemElement.offsetHeight + 'px';
-        itemElement.offsetHeight;
-        itemElement.classList.add('cart-item-dissolve');
-        if (settings.hapticEnabled) tg.HapticFeedback.impactOccurred('medium');
+  const btn = event.target;
+  const itemElement = btn.closest('.cart-item');
 
-        setTimeout(() => {
-          cart = cart.filter(x => x.id != id); // Используем !=
-          updateCartUI();
-          if (cart.length === 0) hideMiniCart();
-        }, 450);
+  if (itemElement && !itemElement.classList.contains('cart-item-dissolve')) {
+    // 1. Фиксируем высоту для плавной анимации
+    itemElement.style.maxHeight = itemElement.offsetHeight + 'px';
+    itemElement.offsetHeight; // force reflow
+
+    // 2. Запускаем эффект растворения
+    itemElement.classList.add('cart-item-dissolve');
+    
+    // ПРАВИЛЬНО: используем нашу функцию-фильтр
+    triggerHaptic('medium');
+
+    setTimeout(() => {
+      // Удаляем товар из массива (подходит и для ID-чисел, и для ID-строк)
+      cart = cart.filter(x => x.id != id);
+
+      updateCartUI();
+
+      if (cart.length === 0) {
+        hideMiniCart();
       }
-    }
 
-    function removeItem(id) {
-      const btn = event.target;
-      const itemElement = btn.closest('.cart-item');
-
-      if (itemElement && !itemElement.classList.contains('cart-item-dissolve')) {
-        // Фиксируем высоту для плавной анимации
-        const currentHeight = itemElement.offsetHeight;
-        itemElement.style.maxHeight = currentHeight + 'px';
-        itemElement.offsetHeight; // force reflow
-
-        // Запускаем твой крутой эффект растворения
-        itemElement.classList.add('cart-item-dissolve');
-        tg.HapticFeedback.impactOccurred('medium');
-
-        setTimeout(() => {
-          // ИСПОЛЬЗУЕМ != (нестрогое неравенство)
-          // Это позволит удалять и числа, и строки одинаково хорошо
-          cart = cart.filter(x => x.id != id);
-
-          updateCartUI();
-
-          if (cart.length === 0) {
-            hideMiniCart();
-          }
-
-          tg.HapticFeedback.notificationOccurred('success');
-        }, 450);
-      }
-    }
+      // ПРАВИЛЬНО: уведомление об успехе через фильтр
+      triggerHaptic('success');
+    }, 450);
+  }
+}
 
 
     function addExtra(id) {
@@ -414,9 +412,7 @@
       document.body.appendChild(particle);
 
       // Вибрация при нажатии (только если включена в настройках)
-      if (settings.hapticEnabled) {
-        tg.HapticFeedback.impactOccurred('light');
-      }
+      triggerHaptic('light');
 
       addExtra(id);
 
@@ -436,9 +432,7 @@
         setTimeout(() => miniCart.style.transform = 'scale(1)', 200);
 
         // Вибрация при "попадании" в корзину (только если включена)
-        if (settings.hapticEnabled) {
-          tg.HapticFeedback.notificationOccurred('success');
-        }
+        triggerHaptic('success');
       }, 700);
     }
     function setPay(m, el) { payMethod = m; document.querySelectorAll('.pay-opt').forEach(o => o.classList.remove('active')); el.classList.add('active'); }
@@ -531,42 +525,49 @@
       renderFiltered(allProducts);
 
       // Добавляем легкую вибрацию для отклика (для Telegram)
-      tg.HapticFeedback.impactOccurred('medium');
+      triggerHaptic('medium');
     }
+
+
+
+
     /* ---------- ФИНАЛЬНЫЙ РАБОЧИЙ КОД ---------- */
-(function() {
-    function initToggles() {
-        const tTheme = document.getElementById('theme-toggle');
-        const tHaptic = document.getElementById('haptic-toggle');
+    (function () {
+      function initApp() {
+        const myTheme = document.getElementById('theme-toggle');
+        const myHaptic = document.getElementById('haptic-toggle');
 
-        if (tTheme) {
-            tTheme.checked = document.body.dataset.theme === 'dark';
-            tTheme.addEventListener('change', () => {
-                const isDark = tTheme.checked;
-                document.body.dataset.theme = isDark ? 'dark' : 'light';
-                localStorage.setItem('yakuza-theme', isDark ? 'dark' : 'light');
-                if (settings.hapticEnabled && window.tg) tg.HapticFeedback.impactOccurred('light');
-            });
+        if (myTheme) {
+          myTheme.checked = document.body.dataset.theme === 'dark';
+          myTheme.onchange = function () {
+            const isDark = myTheme.checked;
+            document.body.dataset.theme = isDark ? 'dark' : 'light';
+            localStorage.setItem('yakuza-theme', isDark ? 'dark' : 'light');
+            if (typeof settings !== 'undefined' && settings.hapticEnabled && window.tg) {
+              tg.HapticFeedback.impactOccurred('light');
+            }
+          };
         }
 
-        if (tHaptic) {
-            // Читаем из localStorage правильно
-            const savedHaptic = localStorage.getItem('haptic-enabled') !== 'false';
-            tHaptic.checked = savedHaptic;
-            settings.hapticEnabled = savedHaptic;
-
-            tHaptic.addEventListener('change', () => {
-                settings.hapticEnabled = tHaptic.checked;
-                localStorage.setItem('haptic-enabled', settings.hapticEnabled);
-                if (settings.hapticEnabled && window.tg) tg.HapticFeedback.notificationOccurred('success');
-            });
+        if (myHaptic) {
+          const isHap = localStorage.getItem('haptic-enabled') !== 'false';
+          if (typeof settings !== 'undefined') settings.hapticEnabled = isHap;
+          myHaptic.checked = isHap;
+          myHaptic.onchange = function () {
+            const val = myHaptic.checked;
+            if (typeof settings !== 'undefined') settings.hapticEnabled = val;
+            localStorage.setItem('haptic-enabled', val);
+            if (val && window.tg) tg.HapticFeedback.notificationOccurred('success');
+          };
         }
-    }
-
-    // Запускаем
-    if (document.readyState === 'complete') initToggles();
-    else window.addEventListener('load', initToggles);
-})();
+      }
+      // Запуск после загрузки
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initApp);
+      } else {
+        initApp();
+      }
+    })();
     /* ----------  ПЛАВАЮЩАЯ КОРЗИНА  ---------- */
     function showMiniCart() {
       const mc = document.getElementById('mini-cart');
@@ -582,7 +583,7 @@
       const h = new Hammer(sh);
       h.on('swipedown', closeAll);
     });
-    
+
 
     initHeroSlider();
     render();
