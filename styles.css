@@ -632,6 +632,53 @@ body.no-scroll {
     border-radius: 20px;
     padding: 14px;
     margin-bottom: 10px;
+    
+    position: relative;
+    /* overflow: hidden; — ВАЖНО: убери или оставь, если внутри нет вылетающих элементов. 
+       Для эффекта растворения лучше оставить hidden, чтобы контент не вылезал при сжатии */
+    overflow: hidden; 
+    
+    /* Добавляем max-height, чтобы его можно было анимировать в 0 */
+    max-height: 200px; 
+    
+    /* Плавный переход для всех свойств, включая трансформацию и фильтры */
+    transition: 
+        transform 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.4s ease,
+        filter 0.4s ease,
+        max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+        margin 0.5s ease,
+        padding 0.5s ease;
+}
+/* Состояние удаления */
+.cart-item-dissolve {
+    pointer-events: none;
+    transition: 
+        transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.3s ease,
+        filter 0.3s ease, /* Блюр должен быть быстрым */
+        max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+        margin 0.4s ease,
+        padding 0.4s ease !important;
+    
+    transform: scale(0.8) translateY(10px);
+    opacity: 0;
+    filter: blur(10px);
+    
+    max-height: 0 !important;
+    margin-bottom: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+.cart-item:active {
+    background: rgba(255, 255, 255, 0.08);
+    transform: scale(0.96);
+    transition: transform 0.1s;
+}
+/* Добавим легкий блик при нажатии, чтобы подчеркнуть касание */
+.cart-item.touch-active {
+    background: rgba(255, 255, 255, 0.05);
+    transform: scale(0.98);
 }
 
 .cart-info {
@@ -721,31 +768,57 @@ body.no-scroll {
     margin: 20px 0 10px;
 }
 
+/* Изменяем grid на flex для горизонтальной прокрутки */
 .extras-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+    display: flex; 
+    gap: 12px;
+    overflow-x: auto; /* Включаем горизонтальный скролл */
+    padding: 10px 5px;
+    margin: 0 -10px; /* Чтобы карточки прокручивались до краев экрана */
+    
+    /* Прячем некрасивую полосу прокрутки */
+    scrollbar-width: none; 
+    -webkit-overflow-scrolling: touch; /* Плавность для iPhone */
+}
+
+.extras-grid::-webkit-scrollbar {
+    display: none;
 }
 
 .extra-card {
     background: #1c1c1e;
     border: 1px solid #333;
-    border-radius: 14px;
-    padding: 10px;
+    border-radius: 18px; /* Чуть мягче углы */
+    padding: 12px;
     text-align: center;
     font-size: 12px;
     font-weight: 600;
     cursor: pointer;
-    transition: background .2s;
+    
+    /* ВАЖНО для скролла: фиксируем ширину и запрещаем сжиматься */
+    min-width: 100px;
+    flex-shrink: 0; 
+    
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .extra-card:active {
     background: #222;
+    transform: scale(0.95); /* Визуальный отклик при нажатии */
 }
 
 .extra-icon {
-    font-size: 20px;
-    margin-bottom: 4px;
+    font-size: 24px; /* Чуть крупнее */
+    margin-bottom: 6px;
+}
+
+/* Класс для летящего смайлика (добавь в конец файла) */
+.flying-particle {
+    position: fixed;
+    z-index: 9999;
+    pointer-events: none;
+    font-size: 24px;
+    transition: all 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .profile-card {

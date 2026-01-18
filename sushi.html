@@ -13,7 +13,7 @@
 </head>
 
 <body>
-
+  <div id="slash-container" class="slash-container"></div>
   <!-- ЛОГО в островке + поиск-островок + аватар -->
   <div class="top-line">
     <div class="logo-island" onclick="showAllCategories()" style="cursor: pointer;">YAKUZA</div>
@@ -258,16 +258,56 @@
       if (cart.length === 0) hideMiniCart();
     }
 
-    function removeItem(id) { cart = cart.filter(x => x.id !== id); updateCartUI(); if (cart.length === 0) hideMiniCart(); }
+    function removeItem(id) {
+    const btn = event.target;
+    const itemElement = btn.closest('.cart-item');
 
-    function addExtra(id) {
-      const item = extras.find(e => e.id === id);
-      const exist = cart.find(x => x.id === id && x.isExtra);
-      if (exist) exist.qty = (exist.qty || 1) + 1;
-      else cart.push({ ...item, qty: 1, isExtra: true });
-      updateCartUI();
-      tg.HapticFeedback.impactOccurred('light');
+    if (itemElement && !itemElement.classList.contains('cart-item-dissolve')) {
+        // Фиксируем высоту для плавной анимации
+        const currentHeight = itemElement.offsetHeight;
+        itemElement.style.maxHeight = currentHeight + 'px';
+        itemElement.offsetHeight; // force reflow
+
+        // Запускаем твой крутой эффект растворения
+        itemElement.classList.add('cart-item-dissolve');
+        tg.HapticFeedback.impactOccurred('medium');
+
+        setTimeout(() => {
+            // ИСПОЛЬЗУЕМ != (нестрогое неравенство)
+            // Это позволит удалять и числа, и строки одинаково хорошо
+            cart = cart.filter(x => x.id != id); 
+            
+            updateCartUI();
+            
+            if (cart.length === 0) {
+                hideMiniCart();
+            }
+            
+            tg.HapticFeedback.notificationOccurred('success');
+        }, 450);
     }
+}
+
+
+function addExtra(id) {
+    const item = extras.find(e => e.id === id);
+    if (!item) return;
+
+    // Важно: ищем именно с флагом isExtra, чтобы не перепутать с основным меню
+    const exist = cart.find(x => x.id === id && x.isExtra);
+    
+    if (exist) {
+        exist.qty = (exist.qty || 1) + 1;
+    } else {
+        // Добавляем новый объект, явно указывая все поля
+        cart.push({ 
+            ...item, 
+            qty: 1, 
+            isExtra: true 
+        });
+    }
+    // Убрали отсюда updateCartUI(), теперь это зона ответственности анимации
+}
 
     function applyPromo() {
       const code = document.getElementById('promo-input').value.trim().toUpperCase();
@@ -281,56 +321,103 @@
     }
 
     function updateCartUI() {
-      const c = cart.reduce((s, i) => s + (i.qty || 1), 0);
-      const sub = cart.filter(i => !i.isExtra).reduce((s, i) => s + i.price * (i.qty || 1), 0);
-      document.getElementById('mini-sum').innerText = sub + '₽';
+    const c = cart.reduce((s, i) => s + (i.qty || 1), 0);
+    // Сумма в мини-корзине (только основные товары или всё вместе — на ваш выбор)
+    const subMini = cart.reduce((s, i) => s + i.price * (i.qty || 1), 0);
+    document.getElementById('mini-sum').innerText = subMini + '₽';
 
-      const extrasGrid = document.getElementById('extras-grid');
-      extrasGrid.innerHTML = extras.map(e => `
-    <div class="extra-card" onclick="addExtra('${e.id}')">
-      <div class="extra-icon">${e.icon}</div>
-      <div>${e.name}</div>
-      <div style="color:var(--accent-light);font-weight:700;">+${e.price}₽</div>
-    </div>`).join('');
+    // Отрисовка сетки допов
+    const extrasGrid = document.getElementById('extras-grid');
+    extrasGrid.innerHTML = extras.map(e => `
+        <div class="extra-card" onclick="addExtraWithAnim('${e.id}', event)">
+            <div class="extra-icon">${e.icon}</div>
+            <div class="extra-name">${e.name}</div>
+            <div style="color:var(--accent-light);font-weight:700;margin-top:5px;">+${e.price}₽</div>
+        </div>`).join('');
 
-      let subtotal = cart.filter(i => !i.isExtra).reduce((s, i) => s + i.price * (i.qty || 1), 0);
-      let extrasTotal = cart.filter(i => i.isExtra).reduce((s, i) => s + i.price * (i.qty || 1), 0);
-      subtotal += extrasTotal;
+    // Расчет полной стоимости
+    let subtotal = cart.reduce((s, i) => s + i.price * (i.qty || 1), 0);
+    const freeDeliveryThreshold = 900;
+    let delivery = 0;
+    if (!promoApplied && subtotal < freeDeliveryThreshold) delivery = 150;
 
-      const freeDeliveryThreshold = 900;
-      let delivery = 0;
-      if (!promoApplied && subtotal < freeDeliveryThreshold) delivery = 150;
+    const total = subtotal + delivery;
+    document.getElementById('total-val').innerText = total + '₽';
 
-      const total = subtotal + delivery;
-      document.getElementById('total-val').innerText = total + '₽';
+    const freeEl = document.getElementById('delivery-free');
+    if (delivery === 0) freeEl.innerText = 'Бесплатная доставка';
+    else freeEl.innerText = `Доставка 150₽ (бесплатно от ${freeDeliveryThreshold}₽)`;
 
-      const freeEl = document.getElementById('delivery-free');
-      if (delivery === 0) freeEl.innerText = 'Бесплатная доставка';
-      else freeEl.innerText = `Доставка 150₽ (бесплатно от ${freeDeliveryThreshold}₽)`;
+    document.getElementById('address').value = userData.address;
 
-      document.getElementById('address').value = userData.address;
-
-      const list = document.getElementById('cart-items');
-      const mainItems = cart.filter(i => !i.isExtra);
-      if (mainItems.length === 0) {
+    // Отрисовка списка товаров в корзине
+    const list = document.getElementById('cart-items');
+    
+    if (cart.length === 0) {
         document.getElementById('cart-empty').style.display = 'block';
         list.innerHTML = '';
-      } else {
+    } else {
         document.getElementById('cart-empty').style.display = 'none';
-        list.innerHTML = mainItems.map(i => `
-      <div class="cart-item">
-        <div class="cart-info"><b>${i.name}</b><br><small>${i.price}₽</small></div>
-        <div class="cart-controls">
-          <button class="cart-btn" onclick="changeQty(${i.id},-1)">−</button>
-          <span class="cart-qty">${i.qty || 1}</span>
-          <button class="cart-btn" onclick="changeQty(${i.id},1)">+</button>
-        </div>
-        <span class="cart-price">${i.price * (i.qty || 1)}₽</span>
-        <span class="cart-remove" onclick="removeItem(${i.id})">Удалить</span>
-      </div>`).join('');
-      }
+        
+        // ВАЖНО: Используем весь массив cart без фильтрации !i.isExtra
+        list.innerHTML = cart.map(i => `
+            <div class="cart-item">
+                <div class="cart-info">
+                    <b>${i.isExtra ? i.icon + ' ' : ''}${i.name}</b><br>
+                    <small>${i.price}₽</small>
+                </div>
+                <div class="cart-controls">
+                    <button class="cart-btn" onclick="changeQty('${i.id}', -1)">−</button>
+                    <span class="cart-qty">${i.qty || 1}</span>
+                    <button class="cart-btn" onclick="changeQty('${i.id}', 1)">+</button>
+                </div>
+                <span class="cart-price">${i.price * (i.qty || 1)}₽</span>
+                <span class="cart-remove" onclick="removeItem('${i.id}')">Удалить</span>
+            </div>`).join('');
     }
+}
+    function addExtraWithAnim(id, event) {
+    const item = extras.find(e => e.id === id);
+    const card = event.currentTarget;
+    const miniCart = document.getElementById('mini-cart');
 
+    // Создаем летящий элемент
+    const particle = document.createElement('div');
+    particle.className = 'flying-particle';
+    particle.innerText = item.icon;
+    
+    const rect = card.getBoundingClientRect();
+    particle.style.left = rect.left + 'px';
+    particle.style.top = rect.top + 'px';
+    document.body.appendChild(particle);
+
+    tg.HapticFeedback.impactOccurred('light');
+
+    // 1. Сначала добавляем данные в массив
+    addExtra(id);
+
+    // 2. Запускаем полет
+    const cartRect = miniCart.getBoundingClientRect();
+    requestAnimationFrame(() => {
+        particle.style.left = (cartRect.left + 20) + 'px';
+        particle.style.top = (cartRect.top + 10) + 'px';
+        particle.style.transform = 'scale(0.3) rotate(360deg)';
+        particle.style.opacity = '0';
+    });
+
+    // 3. Когда долетело — обновляем список (UI)
+    setTimeout(() => {
+        particle.remove();
+        
+        // Теперь товары появятся в списке корзины
+        updateCartUI(); 
+        
+        // Эффект подтверждения
+        miniCart.style.transform = 'scale(1.2)';
+        setTimeout(() => miniCart.style.transform = 'scale(1)', 200);
+        tg.HapticFeedback.notificationOccurred('success');
+    }, 700);
+}
     function setPay(m, el) { payMethod = m; document.querySelectorAll('.pay-opt').forEach(o => o.classList.remove('active')); el.classList.add('active'); }
 
     function closeAll() {
