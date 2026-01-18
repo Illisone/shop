@@ -92,6 +92,7 @@ body {
   height: 44px;
   margin-left: auto;          /* прижато к правому краю */
   flex-shrink: 0;
+  transform-origin: right center;
   transition: width .35s cubic-bezier(.4,0,.2,1);
 }
 
@@ -110,7 +111,7 @@ body {
   font-size: 14px;
   color: var(--text);
   pointer-events: none;
-  transform: translateX(calc(100% - 44px)); /* спрятана вправо */
+  transform: scaleX(0);/* спрятана вправо */
   transition: transform .35s cubic-bezier(.4,0,.2,1);
 }
 
@@ -141,12 +142,21 @@ body {
   content: "";
   position: absolute;
   left: calc(50% + 6px);
-  top: calc(50% + 6px);
+  top: calc(50% + 10px);
   width: 8px;
   height: 2px;
   background: var(--text-gray);
   transform: translate(-50%,-50%) rotate(45deg);
   transition: all .25s;
+}
+.search-form.open .search-btn::before,
+.search-form.open .search-btn::after {
+  width: 22px;
+  height: 2px;
+  background: var(--text);
+  left: 50%;
+  top: 50%;
+  margin: 0;
 }
 
 /* раскрытие влево */
