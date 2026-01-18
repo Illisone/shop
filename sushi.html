@@ -120,20 +120,32 @@
         <div class="profile-bonus-card">
           <div class="profile-bonus-label">Бонусы</div>
           <div class="profile-bonus-val" id="profile-bonus">1 250 ₽</div>
+
         </div>
       </div>
       <div style="margin-bottom:20px;">
         <div style="font-size:14px;color:var(--text-gray);">Адрес доставки</div>
         <input type="text" id="profile-address" class="input-style" placeholder="Улица, дом, квартира">
       </div>
-      <div style="margin-top:20px;">
-        <div style="font-size:14px;color:var(--text-gray);">Тема оформления</div>
+      <div style="margin-top:20px; display: flex; flex-direction: column; gap: 15px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 100;">
+        <div style="font-size:14px; color:var(--text-gray);">Тёмная тема</div>
         <label class="theme-switch">
-          <input type="checkbox" id="theme-toggle">
-          <span class="slider"></span>
-          <span class="labels">🌙</span>
+            <input type="checkbox" id="theme-toggle">
+            <span class="slider"></span>
+            <span class="labels">🌙</span>
         </label>
-      </div>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 101;">
+        <div style="font-size:14px; color:var(--text-gray);">Виброотклик</div>
+        <label class="theme-switch">
+            <input type="checkbox" id="haptic-toggle">
+            <span class="slider"></span>
+            <span class="labels">📳</span>
+        </label>
+    </div>
+</div>
     </div>
     <button class="btn-main" onclick="saveProfile()">Сохранить</button>
   </div>
@@ -141,6 +153,9 @@
   <script>
     /* ----------  тот же JS, что был, + новый поиск-островок  ---------- */
     let tg = window.Telegram.WebApp; tg.expand();
+    let settings = {
+      hapticEnabled: localStorage.getItem('haptic-enabled') !== 'false'
+    };
     let cart = [], curProd = null, payMethod = 'cash', currentTab = 'rolls';
     let promoApplied = false;
     let userData = { name: '—', phone: '—', address: '', bonus: 1250 };
@@ -196,22 +211,15 @@
 
     function switchTab(tab) {
       currentTab = tab;
-
-      // 1. Удаляем активный класс у всех кнопок
       document.querySelectorAll('.bottom-tab').forEach(t => t.classList.remove('active'));
+      if (event && event.currentTarget) event.currentTarget.classList.add('active');
 
-      // 2. Находим кнопку, на которую нажали, и добавляем ей класс
-      // event.currentTarget — это именно та кнопка, по которой попал палец
-      if (event && event.currentTarget) {
-        event.currentTarget.classList.add('active');
+      // Вибрируем только если разрешено в настройках
+      if (settings.hapticEnabled) {
+        tg.HapticFeedback.impactOccurred('light');
       }
 
-      // 3. Добавляем вибрацию для телефона (Haptic Feedback)
-      if (window.Telegram && Telegram.WebApp) {
-        Telegram.WebApp.HapticFeedback.impactOccurred('light');
-      }
-
-      render(); // перерисовываем товары
+      render();
     }
 
     function render() {
@@ -250,19 +258,35 @@
     }
 
     function changeQty(id, delta) {
-      const item = cart.find(x => x.id === id);
+      const item = cart.find(x => x.id == id); // Используем ==
       if (!item) return;
       item.qty = Math.max(1, (item.qty || 1) + delta);
-      if (item.qty === 0) cart = cart.filter(x => x.id !== id);
+      if (settings.hapticEnabled) tg.HapticFeedback.impactOccurred('light');
       updateCartUI();
-      if (cart.length === 0) hideMiniCart();
     }
 
     function removeItem(id) {
-    const btn = event.target;
-    const itemElement = btn.closest('.cart-item');
+      const btn = event.target;
+      const itemElement = btn.closest('.cart-item');
+      if (itemElement && !itemElement.classList.contains('cart-item-dissolve')) {
+        itemElement.style.maxHeight = itemElement.offsetHeight + 'px';
+        itemElement.offsetHeight;
+        itemElement.classList.add('cart-item-dissolve');
+        if (settings.hapticEnabled) tg.HapticFeedback.impactOccurred('medium');
 
-    if (itemElement && !itemElement.classList.contains('cart-item-dissolve')) {
+        setTimeout(() => {
+          cart = cart.filter(x => x.id != id); // Используем !=
+          updateCartUI();
+          if (cart.length === 0) hideMiniCart();
+        }, 450);
+      }
+    }
+
+    function removeItem(id) {
+      const btn = event.target;
+      const itemElement = btn.closest('.cart-item');
+
+      if (itemElement && !itemElement.classList.contains('cart-item-dissolve')) {
         // Фиксируем высоту для плавной анимации
         const currentHeight = itemElement.offsetHeight;
         itemElement.style.maxHeight = currentHeight + 'px';
@@ -273,41 +297,41 @@
         tg.HapticFeedback.impactOccurred('medium');
 
         setTimeout(() => {
-            // ИСПОЛЬЗУЕМ != (нестрогое неравенство)
-            // Это позволит удалять и числа, и строки одинаково хорошо
-            cart = cart.filter(x => x.id != id); 
-            
-            updateCartUI();
-            
-            if (cart.length === 0) {
-                hideMiniCart();
-            }
-            
-            tg.HapticFeedback.notificationOccurred('success');
+          // ИСПОЛЬЗУЕМ != (нестрогое неравенство)
+          // Это позволит удалять и числа, и строки одинаково хорошо
+          cart = cart.filter(x => x.id != id);
+
+          updateCartUI();
+
+          if (cart.length === 0) {
+            hideMiniCart();
+          }
+
+          tg.HapticFeedback.notificationOccurred('success');
         }, 450);
+      }
     }
-}
 
 
-function addExtra(id) {
-    const item = extras.find(e => e.id === id);
-    if (!item) return;
+    function addExtra(id) {
+      const item = extras.find(e => e.id === id);
+      if (!item) return;
 
-    // Важно: ищем именно с флагом isExtra, чтобы не перепутать с основным меню
-    const exist = cart.find(x => x.id === id && x.isExtra);
-    
-    if (exist) {
+      // Важно: ищем именно с флагом isExtra, чтобы не перепутать с основным меню
+      const exist = cart.find(x => x.id === id && x.isExtra);
+
+      if (exist) {
         exist.qty = (exist.qty || 1) + 1;
-    } else {
+      } else {
         // Добавляем новый объект, явно указывая все поля
-        cart.push({ 
-            ...item, 
-            qty: 1, 
-            isExtra: true 
+        cart.push({
+          ...item,
+          qty: 1,
+          isExtra: true
         });
+      }
+      // Убрали отсюда updateCartUI(), теперь это зона ответственности анимации
     }
-    // Убрали отсюда updateCartUI(), теперь это зона ответственности анимации
-}
 
     function applyPromo() {
       const code = document.getElementById('promo-input').value.trim().toUpperCase();
@@ -321,103 +345,104 @@ function addExtra(id) {
     }
 
     function updateCartUI() {
-    const c = cart.reduce((s, i) => s + (i.qty || 1), 0);
-    // Сумма в мини-корзине (только основные товары или всё вместе — на ваш выбор)
-    const subMini = cart.reduce((s, i) => s + i.price * (i.qty || 1), 0);
-    document.getElementById('mini-sum').innerText = subMini + '₽';
+      const c = cart.reduce((s, i) => s + (i.qty || 1), 0);
+      // Сумма в мини-корзине (только основные товары или всё вместе — на ваш выбор)
+      const subMini = cart.reduce((s, i) => s + i.price * (i.qty || 1), 0);
+      document.getElementById('mini-sum').innerText = subMini + '₽';
 
-    // Отрисовка сетки допов
-    const extrasGrid = document.getElementById('extras-grid');
-    extrasGrid.innerHTML = extras.map(e => `
+      // Отрисовка сетки допов
+      const extrasGrid = document.getElementById('extras-grid');
+      extrasGrid.innerHTML = extras.map(e => `
         <div class="extra-card" onclick="addExtraWithAnim('${e.id}', event)">
             <div class="extra-icon">${e.icon}</div>
             <div class="extra-name">${e.name}</div>
             <div style="color:var(--accent-light);font-weight:700;margin-top:5px;">+${e.price}₽</div>
         </div>`).join('');
 
-    // Расчет полной стоимости
-    let subtotal = cart.reduce((s, i) => s + i.price * (i.qty || 1), 0);
-    const freeDeliveryThreshold = 900;
-    let delivery = 0;
-    if (!promoApplied && subtotal < freeDeliveryThreshold) delivery = 150;
+      // Расчет полной стоимости
+      let subtotal = cart.reduce((s, i) => s + i.price * (i.qty || 1), 0);
+      const freeDeliveryThreshold = 900;
+      let delivery = 0;
+      if (!promoApplied && subtotal < freeDeliveryThreshold) delivery = 150;
 
-    const total = subtotal + delivery;
-    document.getElementById('total-val').innerText = total + '₽';
+      const total = subtotal + delivery;
+      document.getElementById('total-val').innerText = total + '₽';
 
-    const freeEl = document.getElementById('delivery-free');
-    if (delivery === 0) freeEl.innerText = 'Бесплатная доставка';
-    else freeEl.innerText = `Доставка 150₽ (бесплатно от ${freeDeliveryThreshold}₽)`;
+      const freeEl = document.getElementById('delivery-free');
+      if (delivery === 0) freeEl.innerText = 'Бесплатная доставка';
+      else freeEl.innerText = `Доставка 150₽ (бесплатно от ${freeDeliveryThreshold}₽)`;
 
-    document.getElementById('address').value = userData.address;
+      document.getElementById('address').value = userData.address;
 
-    // Отрисовка списка товаров в корзине
-    const list = document.getElementById('cart-items');
-    
-    if (cart.length === 0) {
+      // Отрисовка списка товаров в корзине
+      const list = document.getElementById('cart-items');
+
+      if (cart.length === 0) {
         document.getElementById('cart-empty').style.display = 'block';
         list.innerHTML = '';
-    } else {
+      } else {
         document.getElementById('cart-empty').style.display = 'none';
-        
+
         // ВАЖНО: Используем весь массив cart без фильтрации !i.isExtra
         list.innerHTML = cart.map(i => `
-            <div class="cart-item">
-                <div class="cart-info">
-                    <b>${i.isExtra ? i.icon + ' ' : ''}${i.name}</b><br>
-                    <small>${i.price}₽</small>
-                </div>
-                <div class="cart-controls">
-                    <button class="cart-btn" onclick="changeQty('${i.id}', -1)">−</button>
-                    <span class="cart-qty">${i.qty || 1}</span>
-                    <button class="cart-btn" onclick="changeQty('${i.id}', 1)">+</button>
-                </div>
-                <span class="cart-price">${i.price * (i.qty || 1)}₽</span>
-                <span class="cart-remove" onclick="removeItem('${i.id}')">Удалить</span>
-            </div>`).join('');
+  <div class="cart-item">
+    <div class="cart-info">
+      <b>${i.isExtra ? i.icon + ' ' : ''}${i.name}</b><br>
+      <small>${i.price}₽</small>
+    </div>
+    <div class="cart-controls">
+      <button class="cart-btn" onclick="changeQty('${i.id}', -1)">−</button>
+      <span class="cart-qty">${i.qty || 1}</span>
+      <button class="cart-btn" onclick="changeQty('${i.id}', 1)">+</button>
+    </div>
+    <span class="cart-price">${i.price * (i.qty || 1)}₽</span>
+    <span class="cart-remove" onclick="removeItem('${i.id}')">Удалить</span>
+  </div>`).join('');
+      }
     }
-}
     function addExtraWithAnim(id, event) {
-    const item = extras.find(e => e.id === id);
-    const card = event.currentTarget;
-    const miniCart = document.getElementById('mini-cart');
+      const item = extras.find(e => e.id === id);
+      const card = event.currentTarget;
+      const miniCart = document.getElementById('mini-cart');
 
-    // Создаем летящий элемент
-    const particle = document.createElement('div');
-    particle.className = 'flying-particle';
-    particle.innerText = item.icon;
-    
-    const rect = card.getBoundingClientRect();
-    particle.style.left = rect.left + 'px';
-    particle.style.top = rect.top + 'px';
-    document.body.appendChild(particle);
+      // Создаем летящий элемент (только эмодзи)
+      const particle = document.createElement('div');
+      particle.className = 'flying-particle';
+      particle.innerText = item.icon;
 
-    tg.HapticFeedback.impactOccurred('light');
+      const rect = card.getBoundingClientRect();
+      particle.style.left = rect.left + 'px';
+      particle.style.top = rect.top + 'px';
+      document.body.appendChild(particle);
 
-    // 1. Сначала добавляем данные в массив
-    addExtra(id);
+      // Вибрация при нажатии (только если включена в настройках)
+      if (settings.hapticEnabled) {
+        tg.HapticFeedback.impactOccurred('light');
+      }
 
-    // 2. Запускаем полет
-    const cartRect = miniCart.getBoundingClientRect();
-    requestAnimationFrame(() => {
+      addExtra(id);
+
+      const cartRect = miniCart.getBoundingClientRect();
+      requestAnimationFrame(() => {
         particle.style.left = (cartRect.left + 20) + 'px';
         particle.style.top = (cartRect.top + 10) + 'px';
         particle.style.transform = 'scale(0.3) rotate(360deg)';
         particle.style.opacity = '0';
-    });
+      });
 
-    // 3. Когда долетело — обновляем список (UI)
-    setTimeout(() => {
+      setTimeout(() => {
         particle.remove();
-        
-        // Теперь товары появятся в списке корзины
-        updateCartUI(); 
-        
-        // Эффект подтверждения
+        updateCartUI();
+
         miniCart.style.transform = 'scale(1.2)';
         setTimeout(() => miniCart.style.transform = 'scale(1)', 200);
-        tg.HapticFeedback.notificationOccurred('success');
-    }, 700);
-}
+
+        // Вибрация при "попадании" в корзину (только если включена)
+        if (settings.hapticEnabled) {
+          tg.HapticFeedback.notificationOccurred('success');
+        }
+      }, 700);
+    }
     function setPay(m, el) { payMethod = m; document.querySelectorAll('.pay-opt').forEach(o => o.classList.remove('active')); el.classList.add('active'); }
 
     function closeAll() {
@@ -510,18 +535,36 @@ function addExtra(id) {
       // Добавляем легкую вибрацию для отклика (для Telegram)
       tg.HapticFeedback.impactOccurred('medium');
     }
-    /* ----------  ТЕМА  ---------- */
-    const themeToggle = document.getElementById('theme-toggle');
-    const saved = localStorage.getItem('yakuza-theme') || 'light';
-    document.body.dataset.theme = saved;
-    themeToggle.checked = saved === 'dark';
-    themeToggle.addEventListener('change', () => {
-      const newTheme = themeToggle.checked ? 'dark' : 'light';
-      document.body.dataset.theme = newTheme;
-      localStorage.setItem('yakuza-theme', newTheme);
-      tg.HapticFeedback.impactOccurred('light');
-    });
+    /* ---------- ФИНАЛЬНЫЕ НАСТРОЙКИ ---------- */
+const tglTheme = document.getElementById('theme-toggle');
+const tglHaptic = document.getElementById('haptic-toggle');
 
+// Инициализация темы
+if (tglTheme) {
+    tglTheme.checked = document.body.dataset.theme === 'dark';
+    tglTheme.onchange = function() {
+        const isDark = tglTheme.checked;
+        document.body.dataset.theme = isDark ? 'dark' : 'light';
+        localStorage.setItem('yakuza-theme', isDark ? 'dark' : 'light');
+        if (settings.hapticEnabled) tg.HapticFeedback.impactOccurred('light');
+    };
+}
+
+// Инициализация вибро
+if (tglHaptic) {
+    // Читаем из памяти правильно
+    const isHaptic = localStorage.getItem('haptic-enabled') !== 'false';
+    settings.hapticEnabled = isHaptic;
+    tglHaptic.checked = isHaptic;
+
+    tglHaptic.onchange = function() {
+        settings.hapticEnabled = tglHaptic.checked;
+        localStorage.setItem('haptic-enabled', settings.hapticEnabled);
+        if (settings.hapticEnabled) {
+            tg.HapticFeedback.notificationOccurred('success');
+        }
+    };
+}
     /* ----------  ПЛАВАЮЩАЯ КОРЗИНА  ---------- */
     function showMiniCart() {
       const mc = document.getElementById('mini-cart');

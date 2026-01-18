@@ -870,26 +870,30 @@ body.no-scroll {
 
 .theme-switch {
     position: relative;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 8px;
+    display: block; /* Важно: block, чтобы четко держать размеры */
+    width: 44px;
+    height: 24px;
+    cursor: pointer;
+    z-index: 10;
 }
 
 .theme-switch input {
+    position: absolute;
     opacity: 0;
-    width: 0;
-    height: 0;
+    width: 100%; /* Растягиваем на весь лейбл */
+    height: 100%;
+    cursor: pointer;
+    z-index: 20; /* Инпут должен быть ПОВЕРХ слайдера */
+    margin: 0;
 }
 
 .slider {
-    width: 44px;
-    height: 24px;
-    background: #222;
-    border-radius: 12px;
-    position: relative;
+    position: absolute;
     cursor: pointer;
-    transition: background .2s;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: #222;
+    border-radius: 34px;
+    transition: 0.3s;
 }
 
 .slider:before {
