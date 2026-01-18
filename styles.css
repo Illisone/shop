@@ -357,21 +357,37 @@ body {
 
 .bottom-tabs {
     position: fixed;
-    bottom: 5px;
-    left: 20px;
-    right: 20px;
-    height: calc(60px + env(safe-area-inset-bottom, 0));
+    /* 1. Поднимаем весь островок над системной зоной */
+    bottom: calc(15px + env(safe-area-inset-bottom, 0px)); 
+    left: 16px;
+    right: 16px;
+    
+    /* 2. Высота должна быть строго фиксированной (например, 64px) */
+    /* Убираем отсюда + env(...), чтобы панель не росла в высоту */
+    height: 64px; 
+    
     background: var(--glass);
-    backdrop-filter: blur(20px);
-    border-top: 0.5px solid var(--border);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    
+    border: 0.5px solid var(--border);
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.1), 
+        inset 0 0 0 0.5px var(--glass-edge); 
+    
     display: flex;
+    align-items: center; /* Центрируем иконки внутри 64 пикселей */
     z-index: 1001;
-    border-radius: 30px;
-    padding-bottom: env(safe-area-inset-bottom, 0);
+    border-radius: 32px;
+    
+    /* 3. Убираем padding-bottom, он нам больше не нужен, так как мы подняли всё через bottom */
+    padding-bottom: 0;
+    box-sizing: border-box;
 }
 
 .bottom-tab {
     flex: 1;
+    height: 100%; /* Таб занимает ровно 64px */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -382,16 +398,24 @@ body {
     color: var(--text-gray);
     font-size: 11px;
     font-weight: 600;
-    transition: color .2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
 }
 
+/* Активная иконка теперь плавно увеличивается */
 .bottom-tab.active {
     color: var(--accent-light);
+    transform: translateY(-2px);
 }
 
 .bottom-icon {
-    font-size: 22px;
+    font-size: 24px; /* Чуть крупнее для читаемости */
     line-height: 1;
+    transition: transform 0.3s ease;
+}
+
+.bottom-tab.active .bottom-icon {
+    transform: scale(1.1);
 }
 
 #mini-cart {
