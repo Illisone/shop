@@ -59,18 +59,37 @@ html,
 body {
     height: 100%;
 }
-
+/* Этот класс блокирует прокрутку фона */
+/* Класс для блокировки скролла на фоне */
+body.no-scroll {
+    overflow: hidden;
+    height: 100vh;
+    /* для iOS */
+    position: fixed; 
+    width: 100%;
+    touch-action: none; 
+}
 /* ---------- 1. верхняя строка  ---------- */
 /* ---------- 1. ШАПКА: ОСТРОВКИ ---------- */
 
 .top-line {
     display: flex;
     align-items: center;
-    justify-content: space-between; /* Лого слева, группа справа */
-    padding: 12px 16px;
+    justify-content: space-between;
+    
+    /* Отступ под челку iPhone */
+    padding: calc(10px + env(safe-area-inset-top, 0px)) 16px 10px;
+    
+    /* Делаем шапку липкой */
     position: sticky;
     top: 0;
     z-index: 1000;
+
+    /* ПОЛНОСТЬЮ ПРОЗРАЧНЫЙ ФОН */
+    background: transparent; 
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-bottom: none;
 }
 
 .top-right-group {
@@ -293,7 +312,7 @@ body {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 14px;
-    padding: 0 20px;
+    padding: 0 20px 50px;
 }
 
 .item {
@@ -358,7 +377,7 @@ body {
 .bottom-tabs {
     position: fixed;
     /* 1. Поднимаем весь островок над системной зоной */
-    bottom: calc(15px + env(safe-area-inset-bottom, 0px)); 
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px)); 
     left: 16px;
     right: 16px;
     
@@ -478,15 +497,29 @@ body {
     bottom: 0;
     left: 0;
     right: 0;
-    background: var(--card);
+    
+    /* Меняем фон на стекло с сильным блюром */
+    background: var(--glass);
+    backdrop-filter: blur(25px) saturate(180%);
+    -webkit-backdrop-filter: blur(25px) saturate(180%);
+    
     border-radius: 32px 32px 0 0;
-    padding: 24px 20px 40px;
+    
+    /* Добавляем тонкую границу только сверху и по бокам */
+    border: 0.5px solid var(--border);
+    border-bottom: none;
+
+    /* padding-bottom делаем с учетом безопасной зоны iPhone */
+    padding: 16px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+    
     max-height: 85vh;
     overflow: hidden;
     z-index: 2000;
     transform: translateY(105%);
     transition: transform .5s cubic-bezier(.19, 1, .22, 1);
-    box-shadow: var(--shadow);
+    
+    /* Тень делаем мягче, так как есть блюр */
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.2);
     display: flex;
     flex-direction: column;
 }
@@ -497,10 +530,12 @@ body {
 
 .sheet-handle {
     width: 40px;
-    height: 4px;
-    background: #333;
+    height: 5px;
+    /* Делаем ручку полупрозрачной, чтобы она подстраивалась под тему */
+    background: rgba(255, 255, 255, 0.2); 
     border-radius: 10px;
-    margin: 0 auto 15px;
+    margin: 0 auto 20px;
+    flex-shrink: 0; /* Чтобы не сжималась */
 }
 
 .sheet-scroll {
@@ -508,6 +543,26 @@ body {
     overflow-y: auto;
     margin: 0 -20px;
     padding: 0 20px;
+    
+    /* Скрываем полосу прокрутки для чистоты дизайна */
+    scrollbar-width: none; 
+}
+.sheet-scroll::-webkit-scrollbar {
+    display: none;
+}
+.det-img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1; /* Делает картинку квадратной и аккуратной */
+    object-fit: cover;
+    border-radius: 24px; /* Скругляем углы под стиль островков */
+    margin-bottom: 20px;
+    
+    /* Тень, чтобы картинка "оторвалась" от прозрачного фона */
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2); 
+    
+    /* Можно добавить легкую обводку, чтобы края не сливались с темным фоном */
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .btn-main {

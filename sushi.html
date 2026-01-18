@@ -1,220 +1,224 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="viewport"
+    content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
   <meta name="color-scheme" content="dark">
   <title>YAKUZA Суши</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
   <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
 
-<!-- ЛОГО в островке + поиск-островок + аватар -->
-<div class="top-line">
-  <div class="logo-island" onclick="showAllCategories()" style="cursor: pointer;">YAKUZA</div>
-  
-  <div class="top-right-group">
-    <form class="search-form" id="search-form">
-      <input id="search-input" type="text" placeholder="Поиск" class="search-input">
-      <button type="button" class="search-btn" id="search-btn"></button>
-    </form>
+  <!-- ЛОГО в островке + поиск-островок + аватар -->
+  <div class="top-line">
+    <div class="logo-island" onclick="showAllCategories()" style="cursor: pointer;">YAKUZA</div>
 
-    <div class="user-avatar-wrapper" onclick="openProfile()">
-      <img id="user-avatar" class="user-avatar" src="https://via.placeholder.com/100" alt="">
-    </div>
-  </div>
-</div>
+    <div class="top-right-group">
+      <form class="search-form" id="search-form">
+        <input id="search-input" type="text" placeholder="Поиск" class="search-input">
+        <button type="button" class="search-btn" id="search-btn"></button>
+      </form>
 
-<div class="main-content">
-  <div class="hero-slider" id="hero-slider"></div>
-  <div class="grid" id="grid"></div>
-</div>
-
-<!-- нижние табы -->
-<nav class="bottom-tabs">
-  <button class="bottom-tab active" onclick="switchTab('rolls')">
-    <span class="bottom-icon">🍣</span>
-    <span>Роллы</span>
-  </button>
-  <button class="bottom-tab" onclick="switchTab('wok')">
-    <span class="bottom-icon">🍜</span>
-    <span>Воки</span>
-  </button>
-  <button class="bottom-tab" onclick="switchTab('snacks')">
-    <span class="bottom-icon">🥟</span>
-    <span>Закуски</span>
-  </button>
-  <button class="bottom-tab" onclick="switchTab('drinks')">
-    <span class="bottom-icon">🥤</span>
-    <span>Напитки</span>
-  </button>
-</nav>
-
-<!-- плавающая корзина -->
-<div id="mini-cart" onclick="openCart()">
-  <span>🛒</span>
-  <span id="mini-sum">0₽</span>
-</div>
-
-<!-- шторки -->
-<div class="overlay" id="overlay" onclick="closeAll()"></div>
-
-<!-- детали товара -->
-<div id="details-sheet" class="sheet">
-  <div class="sheet-handle"></div>
-  <img id="d-img" style="width:100%;border-radius:22px;height:260px;object-fit:cover;">
-  <h2 id="d-title" style="margin:20px 0 5px;font-size:26px;font-weight:900;"></h2>
-  <p id="d-meta" style="color:var(--text-gray);font-size:14px;margin-bottom:15px;"></p>
-  <p id="d-desc" style="color:#bbb;line-height:1.5;font-size:15px;margin-bottom:20px;"></p>
-  <button class="btn-main" onclick="addToCartFromDetails()">Добавить в корзину</button>
-</div>
-
-<!-- корзина-шторка -->
-<div id="cart-sheet" class="sheet">
-  <div class="sheet-handle"></div>
-  <h2 style="margin:0 0 20px;font-weight:900;">Ваш заказ</h2>
-  <div class="sheet-scroll">
-    <div id="cart-items"></div>
-    <div id="cart-empty" style="text-align:center;padding:30px;color:var(--text-gray);display:none;">Корзина пуста</div>
-
-    <div class="extras-title">Добавить к заказу?</div>
-    <div class="extras-grid" id="extras-grid"></div>
-
-    <div class="promo-row">
-      <input type="text" class="promo-input" id="promo-input" placeholder="Промокод">
-      <button class="promo-btn" onclick="applyPromo()">Применить</button>
-    </div>
-
-    <div class="pay-selector">
-      <div class="pay-opt active" onclick="setPay('cash',this)">Наличные</div>
-      <div class="pay-opt" onclick="setPay('card',this)">Картой</div>
-      <div class="pay-opt" onclick="setPay('online',this)">Онлайн</div>
-    </div>
-
-    <div class="total-row">
-      <span>Итого</span>
-      <span id="total-val">0₽</span>
-    </div>
-    <div class="delivery-free" id="delivery-free"></div>
-
-    <input type="text" id="address" class="input-style" placeholder="Адрес доставки">
-  </div>
-  <button class="btn-main" onclick="sendOrder()">Оформить заказ</button>
-</div>
-
-<!-- личный кабинет -->
-<div id="profile-sheet" class="sheet">
-  <div class="sheet-handle"></div>
-  <h2 style="margin:0 0 20px;font-weight:900;">Личный кабинет</h2>
-  <div class="sheet-scroll">
-    <div class="profile-card">
-      <img id="profile-avatar" class="profile-avatar-large" src="https://via.placeholder.com/100" alt="">
-      <div class="profile-name" id="profile-name">—</div>
-      <div class="profile-phone" id="profile-phone">—</div>
-      <div class="profile-bonus-card">
-        <div class="profile-bonus-label">Бонусы</div>
-        <div class="profile-bonus-val" id="profile-bonus">1 250 ₽</div>
+      <div class="user-avatar-wrapper" onclick="openProfile()">
+        <img id="user-avatar" class="user-avatar" src="https://via.placeholder.com/100" alt="">
       </div>
     </div>
-    <div style="margin-bottom:20px;">
-      <div style="font-size:14px;color:var(--text-gray);">Адрес доставки</div>
-      <input type="text" id="profile-address" class="input-style" placeholder="Улица, дом, квартира">
-    </div>
-    <div style="margin-top:20px;">
-      <div style="font-size:14px;color:var(--text-gray);">Тема оформления</div>
-      <label class="theme-switch">
-        <input type="checkbox" id="theme-toggle">
-        <span class="slider"></span>
-        <span class="labels">🌙</span>
-      </label>
-    </div>
   </div>
-  <button class="btn-main" onclick="saveProfile()">Сохранить</button>
-</div>
 
-<script>
-/* ----------  тот же JS, что был, + новый поиск-островок  ---------- */
-let tg = window.Telegram.WebApp; tg.expand();
-let cart = [], curProd = null, payMethod = 'cash', currentTab = 'rolls';
-let promoApplied = false;
-let userData = {name:'—',phone:'—',address:'',bonus:1250};
+  <div class="main-content">
+    <div class="hero-slider" id="hero-slider"></div>
+    <div class="grid" id="grid"></div>
+  </div>
 
-const menu = {
-  rolls: [
-    {id:1, name:"Мечта кота", price:1530, meta:"32 шт | 1.1 кг", img:"https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=600&q=80", desc:"Филадельфия огурец, Филадельфия бекон, Темпура чикен, Темпура тамаго лосось.", tag:"HOT", tagIcon:"🌶️"},
-    {id:2, name:"Сет Зимний", price:1945, meta:"64 шт | 2.2 кг", img:"https://images.unsplash.com/photo-1583623025817-d180a2221d0a?w=600&q=80", desc:"Огромный сет для большой компании.", tag:"NEW", tagIcon:"🔥"},
-    {id:3, name:"Филадельфия", price:650, meta:"8 шт | 280 г", img:"https://images.unsplash.com/photo-1553621042-f6e147245754?w=600&q=80", desc:"Классический ролл со свежим лососем.", tag:"", tagIcon:""},
-    {id:4, name:"Калифорния", price:590, meta:"8 шт | 250 г", img:"https://images.unsplash.com/photo-1559466273-d95e72debaf8?w=600&q=80", desc:"Снежный краб, огурец и икра тобико.", tag:"", tagIcon:""}
-  ],
-  wok: [
-    {id:5, name:"Курица вок", price:490, meta:"320 г", img:"https://images.unsplash.com/photo-1512058560366-cd2427ff06d3?w=600&q=80", desc:"Курица, овощи, соус терияки.", tag:"", tagIcon:""},
-    {id:6, name:"Говядина вок", price:590, meta:"320 г", img:"https://images.unsplash.com/photo-1543826173-70651703c5a4?w=600&q=80", desc:"Говядина, овощи, соус чили.", tag:"HOT", tagIcon:"🌶️"}
-  ],
-  snacks: [
-    {id:7, name:"Гедза", price:290, meta:"6 шт", img:"https://images.unsplash.com/photo-1617093727343-374698b1b08d?w=600&q=80", desc:"Японские пельмени с начинкой на выбор.", tag:"", tagIcon:""},
-    {id:8, name:"Спайси эдамаме", price:190, meta:"120 г", img:"https://images.unsplash.com/photo-1609501676725-7186f017a4b7?w=600&q=80", desc:"Молодые бобы с острым соусом.", tag:"HOT", tagIcon:"🌶️"}
-  ],
-  drinks: [
-    {id:9, name:"Coca-Cola", price:120, meta:"0.5 л", img:"https://images.unsplash.com/photo-1622708782596-13d5e5ac5a9e?w=600&q=80", desc:"Освежающая классика.", tag:"", tagIcon:""},
-    {id:10, name:"ФRESH-лимонад", price:180, meta:"0.4 л", img:"https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=600&q=80", desc:"Лимон, мята, натуральный сок.", tag:"NEW", tagIcon:"🔥"}
-  ]
-};
+  <!-- нижние табы -->
+  <nav class="bottom-tabs">
+    <button class="bottom-tab active" onclick="switchTab('rolls')">
+      <span class="bottom-icon">🍣</span>
+      <span>Роллы</span>
+    </button>
+    <button class="bottom-tab" onclick="switchTab('wok')">
+      <span class="bottom-icon">🍜</span>
+      <span>Воки</span>
+    </button>
+    <button class="bottom-tab" onclick="switchTab('snacks')">
+      <span class="bottom-icon">🥟</span>
+      <span>Закуски</span>
+    </button>
+    <button class="bottom-tab" onclick="switchTab('drinks')">
+      <span class="bottom-icon">🥤</span>
+      <span>Напитки</span>
+    </button>
+  </nav>
 
-const extras = [
-  {id:'wasabi',name:'Васаби',price:30,icon:'🌶️'},
-  {id:'sticks',name:'Палочки',price:40,icon:'🥢'},
-  {id:'soya',name:'Соевый соус',price:35,icon:'🧂'}
-];
+  <!-- плавающая корзина -->
+  <div id="mini-cart" onclick="openCart()">
+    <span>🛒</span>
+    <span id="mini-sum">0₽</span>
+  </div>
 
-const heroImages = [
-  {img:"https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=1200&q=80", txt:"Подарок к заказу от 2000₽"},
-  {img:"https://images.unsplash.com/photo-1611143669185-af224c5e3252?w=1200&q=80", txt:"Скидка -15% на самовывоз"},
-  {img:"https://images.unsplash.com/photo-1553621042-f6e147245754?w=1200&q=80", txt:"Новый сет «Самурай»"}
-];
+  <!-- шторки -->
+  <div class="overlay" id="overlay" onclick="closeAll()"></div>
 
-let heroIndex = 0;
-function initHeroSlider(){
-  const slider = document.getElementById('hero-slider');
-  slider.innerHTML = heroImages.map((h,i)=>`
-    <div class="hero-slide ${i===0?'active':''}">
+  <!-- детали товара -->
+  <div id="details-sheet" class="sheet">
+    <div class="sheet-handle"></div>
+    <img id="d-img" style="width:100%;border-radius:22px;height:260px;object-fit:cover;">
+    <h2 id="d-title" style="margin:20px 0 5px;font-size:26px;font-weight:900;"></h2>
+    <p id="d-meta" style="color:var(--text-gray);font-size:14px;margin-bottom:15px;"></p>
+    <p id="d-desc" style="color:#bbb;line-height:1.5;font-size:15px;margin-bottom:20px;"></p>
+    <button class="btn-main" onclick="addToCartFromDetails()">Добавить в корзину</button>
+  </div>
+
+  <!-- корзина-шторка -->
+  <div id="cart-sheet" class="sheet">
+    <div class="sheet-handle"></div>
+    <h2 style="margin:0 0 20px;font-weight:900;">Ваш заказ</h2>
+    <div class="sheet-scroll">
+      <div id="cart-items"></div>
+      <div id="cart-empty" style="text-align:center;padding:30px;color:var(--text-gray);display:none;">Корзина пуста
+      </div>
+
+      <div class="extras-title">Добавить к заказу?</div>
+      <div class="extras-grid" id="extras-grid"></div>
+
+      <div class="promo-row">
+        <input type="text" class="promo-input" id="promo-input" placeholder="Промокод">
+        <button class="promo-btn" onclick="applyPromo()">Применить</button>
+      </div>
+
+      <div class="pay-selector">
+        <div class="pay-opt active" onclick="setPay('cash',this)">Наличные</div>
+        <div class="pay-opt" onclick="setPay('card',this)">Картой</div>
+        <div class="pay-opt" onclick="setPay('online',this)">Онлайн</div>
+      </div>
+
+      <div class="total-row">
+        <span>Итого</span>
+        <span id="total-val">0₽</span>
+      </div>
+      <div class="delivery-free" id="delivery-free"></div>
+
+      <input type="text" id="address" class="input-style" placeholder="Адрес доставки">
+    </div>
+    <button class="btn-main" onclick="sendOrder()">Оформить заказ</button>
+  </div>
+
+  <!-- личный кабинет -->
+  <div id="profile-sheet" class="sheet">
+    <div class="sheet-handle"></div>
+    <h2 style="margin:0 0 20px;font-weight:900;">Личный кабинет</h2>
+    <div class="sheet-scroll">
+      <div class="profile-card">
+        <img id="profile-avatar" class="profile-avatar-large" src="https://via.placeholder.com/100" alt="">
+        <div class="profile-name" id="profile-name">—</div>
+        <div class="profile-phone" id="profile-phone">—</div>
+        <div class="profile-bonus-card">
+          <div class="profile-bonus-label">Бонусы</div>
+          <div class="profile-bonus-val" id="profile-bonus">1 250 ₽</div>
+        </div>
+      </div>
+      <div style="margin-bottom:20px;">
+        <div style="font-size:14px;color:var(--text-gray);">Адрес доставки</div>
+        <input type="text" id="profile-address" class="input-style" placeholder="Улица, дом, квартира">
+      </div>
+      <div style="margin-top:20px;">
+        <div style="font-size:14px;color:var(--text-gray);">Тема оформления</div>
+        <label class="theme-switch">
+          <input type="checkbox" id="theme-toggle">
+          <span class="slider"></span>
+          <span class="labels">🌙</span>
+        </label>
+      </div>
+    </div>
+    <button class="btn-main" onclick="saveProfile()">Сохранить</button>
+  </div>
+
+  <script>
+    /* ----------  тот же JS, что был, + новый поиск-островок  ---------- */
+    let tg = window.Telegram.WebApp; tg.expand();
+    let cart = [], curProd = null, payMethod = 'cash', currentTab = 'rolls';
+    let promoApplied = false;
+    let userData = { name: '—', phone: '—', address: '', bonus: 1250 };
+
+    const menu = {
+      rolls: [
+        { id: 1, name: "Мечта кота", price: 1530, meta: "32 шт | 1.1 кг", img: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=600&q=80", desc: "Филадельфия огурец, Филадельфия бекон, Темпура чикен, Темпура тамаго лосось.", tag: "HOT", tagIcon: "🌶️" },
+        { id: 2, name: "Сет Зимний", price: 1945, meta: "64 шт | 2.2 кг", img: "https://images.unsplash.com/photo-1583623025817-d180a2221d0a?w=600&q=80", desc: "Огромный сет для большой компании.", tag: "NEW", tagIcon: "🔥" },
+        { id: 3, name: "Филадельфия", price: 650, meta: "8 шт | 280 г", img: "https://images.unsplash.com/photo-1553621042-f6e147245754?w=600&q=80", desc: "Классический ролл со свежим лососем.", tag: "", tagIcon: "" },
+        { id: 4, name: "Калифорния", price: 590, meta: "8 шт | 250 г", img: "https://images.unsplash.com/photo-1559466273-d95e72debaf8?w=600&q=80", desc: "Снежный краб, огурец и икра тобико.", tag: "", tagIcon: "" }
+      ],
+      wok: [
+        { id: 5, name: "Курица вок", price: 490, meta: "320 г", img: "https://images.unsplash.com/photo-1512058560366-cd2427ff06d3?w=600&q=80", desc: "Курица, овощи, соус терияки.", tag: "", tagIcon: "" },
+        { id: 6, name: "Говядина вок", price: 590, meta: "320 г", img: "https://images.unsplash.com/photo-1543826173-70651703c5a4?w=600&q=80", desc: "Говядина, овощи, соус чили.", tag: "HOT", tagIcon: "🌶️" }
+      ],
+      snacks: [
+        { id: 7, name: "Гедза", price: 290, meta: "6 шт", img: "https://images.unsplash.com/photo-1617093727343-374698b1b08d?w=600&q=80", desc: "Японские пельмени с начинкой на выбор.", tag: "", tagIcon: "" },
+        { id: 8, name: "Спайси эдамаме", price: 190, meta: "120 г", img: "https://images.unsplash.com/photo-1609501676725-7186f017a4b7?w=600&q=80", desc: "Молодые бобы с острым соусом.", tag: "HOT", tagIcon: "🌶️" }
+      ],
+      drinks: [
+        { id: 9, name: "Coca-Cola", price: 120, meta: "0.5 л", img: "https://images.unsplash.com/photo-1622708782596-13d5e5ac5a9e?w=600&q=80", desc: "Освежающая классика.", tag: "", tagIcon: "" },
+        { id: 10, name: "ФRESH-лимонад", price: 180, meta: "0.4 л", img: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=600&q=80", desc: "Лимон, мята, натуральный сок.", tag: "NEW", tagIcon: "🔥" }
+      ]
+    };
+
+    const extras = [
+      { id: 'wasabi', name: 'Васаби', price: 30, icon: '🌶️' },
+      { id: 'sticks', name: 'Палочки', price: 40, icon: '🥢' },
+      { id: 'soya', name: 'Соевый соус', price: 35, icon: '🧂' }
+    ];
+
+    const heroImages = [
+      { img: "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=1200&q=80", txt: "Подарок к заказу от 2000₽" },
+      { img: "https://images.unsplash.com/photo-1611143669185-af224c5e3252?w=1200&q=80", txt: "Скидка -15% на самовывоз" },
+      { img: "https://images.unsplash.com/photo-1553621042-f6e147245754?w=1200&q=80", txt: "Новый сет «Самурай»" }
+    ];
+
+    let heroIndex = 0;
+    function initHeroSlider() {
+      const slider = document.getElementById('hero-slider');
+      slider.innerHTML = heroImages.map((h, i) => `
+    <div class="hero-slide ${i === 0 ? 'active' : ''}">
       <img src="${h.img}" alt="">
       <div class="hero-text">${h.txt}</div>
     </div>`).join('');
-  setInterval(()=>{
-    const slides = slider.querySelectorAll('.hero-slide');
-    slides[heroIndex].classList.remove('active');
-    heroIndex = (heroIndex + 1) % slides.length;
-    slides[heroIndex].classList.add('active');
-  }, 3000);
-}
+      setInterval(() => {
+        const slides = slider.querySelectorAll('.hero-slide');
+        slides[heroIndex].classList.remove('active');
+        heroIndex = (heroIndex + 1) % slides.length;
+        slides[heroIndex].classList.add('active');
+      }, 3000);
+    }
 
-function switchTab(tab) {
-  currentTab = tab;
-  
-  // 1. Удаляем активный класс у всех кнопок
-  document.querySelectorAll('.bottom-tab').forEach(t => t.classList.remove('active'));
-  
-  // 2. Находим кнопку, на которую нажали, и добавляем ей класс
-  // event.currentTarget — это именно та кнопка, по которой попал палец
-  if (event && event.currentTarget) {
-    event.currentTarget.classList.add('active');
-  }
+    function switchTab(tab) {
+      currentTab = tab;
 
-  // 3. Добавляем вибрацию для телефона (Haptic Feedback)
-  if (window.Telegram && Telegram.WebApp) {
-    Telegram.WebApp.HapticFeedback.impactOccurred('light');
-  }
-  
-  render(); // перерисовываем товары
-}
+      // 1. Удаляем активный класс у всех кнопок
+      document.querySelectorAll('.bottom-tab').forEach(t => t.classList.remove('active'));
 
-function render(){
-  const items = menu[currentTab] || [];
-  document.getElementById('grid').innerHTML = items.map((p,i)=>`
-    <div class="item" style="animation-delay:${i*0.1}s" onclick="showDetails(${p.id})">
-      ${p.tag?`<div class="badge"><span class="badge-icon">${p.tagIcon}</span><span>${p.tag}</span></div>`:''}
+      // 2. Находим кнопку, на которую нажали, и добавляем ей класс
+      // event.currentTarget — это именно та кнопка, по которой попал палец
+      if (event && event.currentTarget) {
+        event.currentTarget.classList.add('active');
+      }
+
+      // 3. Добавляем вибрацию для телефона (Haptic Feedback)
+      if (window.Telegram && Telegram.WebApp) {
+        Telegram.WebApp.HapticFeedback.impactOccurred('light');
+      }
+
+      render(); // перерисовываем товары
+    }
+
+    function render() {
+      const items = menu[currentTab] || [];
+      document.getElementById('grid').innerHTML = items.map((p, i) => `
+    <div class="item" style="animation-delay:${i * 0.1}s" onclick="showDetails(${p.id})">
+      ${p.tag ? `<div class="badge"><span class="badge-icon">${p.tagIcon}</span><span>${p.tag}</span></div>` : ''}
       <img src="${p.img}" class="item-img">
       <div style="font-weight:800;font-size:15px">${p.name}</div>
       <div style="font-size:11px;color:var(--text-gray)">${p.meta}</div>
@@ -222,173 +226,181 @@ function render(){
         <span class="p-val">${p.price}₽</span>
       </div>
     </div>`).join('');
-}
+    }
 
-function showDetails(id){
-  const item = menu[currentTab].find(p=>p.id===id) || Object.values(menu).flat().find(p=>p.id===id);
-  curProd = item;
-  document.getElementById('d-img').src = item.img;
-  document.getElementById('d-title').innerText = item.name;
-  document.getElementById('d-meta').innerText = item.meta;
-  document.getElementById('d-desc').innerText = item.desc;
-  openSheet('details-sheet');
-  tg.HapticFeedback.impactOccurred('medium');
-}
+    function showDetails(id) {
+      const item = menu[currentTab].find(p => p.id === id) || Object.values(menu).flat().find(p => p.id === id);
+      curProd = item;
+      document.getElementById('d-img').src = item.img;
+      document.getElementById('d-title').innerText = item.name;
+      document.getElementById('d-meta').innerText = item.meta;
+      document.getElementById('d-desc').innerText = item.desc;
+      openSheet('details-sheet');
+      tg.HapticFeedback.impactOccurred('medium');
+    }
 
-function addToCartFromDetails(){
-  const exist = cart.find(x=>x.id===curProd.id && !x.isExtra);
-  if(exist) exist.qty = (exist.qty||1)+1;
-  else cart.push({...curProd, qty:1});
-  updateCartUI(); 
-  showMiniCart();
-  closeAll();
-  tg.HapticFeedback.notificationOccurred('success');
-}
+    function addToCartFromDetails() {
+      const exist = cart.find(x => x.id === curProd.id && !x.isExtra);
+      if (exist) exist.qty = (exist.qty || 1) + 1;
+      else cart.push({ ...curProd, qty: 1 });
+      updateCartUI();
+      showMiniCart();
+      closeAll();
+      tg.HapticFeedback.notificationOccurred('success');
+    }
 
-function changeQty(id,delta){
-  const item = cart.find(x=>x.id===id);
-  if(!item) return;
-  item.qty = Math.max(1, (item.qty||1)+delta);
-  if(item.qty===0) cart=cart.filter(x=>x.id!==id);
-  updateCartUI();
-  if(cart.length===0) hideMiniCart();
-}
+    function changeQty(id, delta) {
+      const item = cart.find(x => x.id === id);
+      if (!item) return;
+      item.qty = Math.max(1, (item.qty || 1) + delta);
+      if (item.qty === 0) cart = cart.filter(x => x.id !== id);
+      updateCartUI();
+      if (cart.length === 0) hideMiniCart();
+    }
 
-function removeItem(id){ cart=cart.filter(x=>x.id!==id); updateCartUI(); if(cart.length===0) hideMiniCart();}
+    function removeItem(id) { cart = cart.filter(x => x.id !== id); updateCartUI(); if (cart.length === 0) hideMiniCart(); }
 
-function addExtra(id){
-  const item = extras.find(e=>e.id===id);
-  const exist = cart.find(x=>x.id===id && x.isExtra);
-  if(exist) exist.qty = (exist.qty||1)+1;
-  else cart.push({...item,qty:1,isExtra:true});
-  updateCartUI();
-  tg.HapticFeedback.impactOccurred('light');
-}
+    function addExtra(id) {
+      const item = extras.find(e => e.id === id);
+      const exist = cart.find(x => x.id === id && x.isExtra);
+      if (exist) exist.qty = (exist.qty || 1) + 1;
+      else cart.push({ ...item, qty: 1, isExtra: true });
+      updateCartUI();
+      tg.HapticFeedback.impactOccurred('light');
+    }
 
-function applyPromo(){
-  const code = document.getElementById('promo-input').value.trim().toUpperCase();
-  if(code==='YAKUZA'){
-    promoApplied = true;
-    tg.showAlert('Промокод применён! Доставка бесплатная.');
-  }else{
-    tg.showAlert('Промокод не найден');
-  }
-  updateCartUI();
-}
+    function applyPromo() {
+      const code = document.getElementById('promo-input').value.trim().toUpperCase();
+      if (code === 'YAKUZA') {
+        promoApplied = true;
+        tg.showAlert('Промокод применён! Доставка бесплатная.');
+      } else {
+        tg.showAlert('Промокод не найден');
+      }
+      updateCartUI();
+    }
 
-function updateCartUI(){
-  const c=cart.reduce((s,i)=>s+(i.qty||1),0);
-  const sub = cart.filter(i=>!i.isExtra).reduce((s,i)=>s+i.price*(i.qty||1),0);
-  document.getElementById('mini-sum').innerText = sub+'₽';
+    function updateCartUI() {
+      const c = cart.reduce((s, i) => s + (i.qty || 1), 0);
+      const sub = cart.filter(i => !i.isExtra).reduce((s, i) => s + i.price * (i.qty || 1), 0);
+      document.getElementById('mini-sum').innerText = sub + '₽';
 
-  const extrasGrid = document.getElementById('extras-grid');
-  extrasGrid.innerHTML = extras.map(e=>`
+      const extrasGrid = document.getElementById('extras-grid');
+      extrasGrid.innerHTML = extras.map(e => `
     <div class="extra-card" onclick="addExtra('${e.id}')">
       <div class="extra-icon">${e.icon}</div>
       <div>${e.name}</div>
       <div style="color:var(--accent-light);font-weight:700;">+${e.price}₽</div>
     </div>`).join('');
 
-  let subtotal = cart.filter(i=>!i.isExtra).reduce((s,i)=>s+i.price*(i.qty||1),0);
-  let extrasTotal = cart.filter(i=>i.isExtra).reduce((s,i)=>s+i.price*(i.qty||1),0);
-  subtotal+=extrasTotal;
+      let subtotal = cart.filter(i => !i.isExtra).reduce((s, i) => s + i.price * (i.qty || 1), 0);
+      let extrasTotal = cart.filter(i => i.isExtra).reduce((s, i) => s + i.price * (i.qty || 1), 0);
+      subtotal += extrasTotal;
 
-  const freeDeliveryThreshold = 900;
-  let delivery = 0;
-  if(!promoApplied && subtotal<freeDeliveryThreshold) delivery = 150;
+      const freeDeliveryThreshold = 900;
+      let delivery = 0;
+      if (!promoApplied && subtotal < freeDeliveryThreshold) delivery = 150;
 
-  const total = subtotal+delivery;
-  document.getElementById('total-val').innerText = total+'₽';
+      const total = subtotal + delivery;
+      document.getElementById('total-val').innerText = total + '₽';
 
-  const freeEl = document.getElementById('delivery-free');
-  if(delivery===0) freeEl.innerText='Бесплатная доставка';
-  else freeEl.innerText=`Доставка 150₽ (бесплатно от ${freeDeliveryThreshold}₽)`;
+      const freeEl = document.getElementById('delivery-free');
+      if (delivery === 0) freeEl.innerText = 'Бесплатная доставка';
+      else freeEl.innerText = `Доставка 150₽ (бесплатно от ${freeDeliveryThreshold}₽)`;
 
-  document.getElementById('address').value = userData.address;
+      document.getElementById('address').value = userData.address;
 
-  const list=document.getElementById('cart-items');
-  const mainItems = cart.filter(i=>!i.isExtra);
-  if(mainItems.length===0){
-    document.getElementById('cart-empty').style.display='block';
-    list.innerHTML='';
-  }else{
-    document.getElementById('cart-empty').style.display='none';
-    list.innerHTML=mainItems.map(i=>`
+      const list = document.getElementById('cart-items');
+      const mainItems = cart.filter(i => !i.isExtra);
+      if (mainItems.length === 0) {
+        document.getElementById('cart-empty').style.display = 'block';
+        list.innerHTML = '';
+      } else {
+        document.getElementById('cart-empty').style.display = 'none';
+        list.innerHTML = mainItems.map(i => `
       <div class="cart-item">
         <div class="cart-info"><b>${i.name}</b><br><small>${i.price}₽</small></div>
         <div class="cart-controls">
           <button class="cart-btn" onclick="changeQty(${i.id},-1)">−</button>
-          <span class="cart-qty">${i.qty||1}</span>
+          <span class="cart-qty">${i.qty || 1}</span>
           <button class="cart-btn" onclick="changeQty(${i.id},1)">+</button>
         </div>
-        <span class="cart-price">${i.price*(i.qty||1)}₽</span>
+        <span class="cart-price">${i.price * (i.qty || 1)}₽</span>
         <span class="cart-remove" onclick="removeItem(${i.id})">Удалить</span>
       </div>`).join('');
-  }
-}
-
-function setPay(m,el){ payMethod=m; document.querySelectorAll('.pay-opt').forEach(o=>o.classList.remove('active')); el.classList.add('active'); }
-
-function closeAll(){ document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('active')); document.getElementById('overlay').classList.remove('active'); }
-
-function openSheet(id){ document.getElementById(id).classList.add('active'); document.getElementById('overlay').classList.add('active'); }
-
-function openCart(){ openSheet('cart-sheet'); }
-function openProfile(){
-  const user = tg.initDataUnsafe?.user;
-  if(user){
-    userData.name = user.first_name||'';
-    userData.phone = user.username ? '@'+user.username : (user.id||'');
-    if(user.photo_url) {
-      document.getElementById('user-avatar').src = user.photo_url;
-      document.getElementById('profile-avatar').src = user.photo_url;
+      }
     }
-  }
-  document.getElementById('profile-name').innerText = userData.name;
-  document.getElementById('profile-phone').innerText = userData.phone;
-  document.getElementById('profile-bonus').innerText = userData.bonus.toLocaleString()+' ₽';
-  document.getElementById('profile-address').value = userData.address;
-  openSheet('profile-sheet');
-}
 
-function saveProfile(){
-  userData.address = document.getElementById('profile-address').value;
-  tg.showAlert('Сохранено!');
-  closeAll();
-}
+    function setPay(m, el) { payMethod = m; document.querySelectorAll('.pay-opt').forEach(o => o.classList.remove('active')); el.classList.add('active'); }
 
-/* ----------  поиск-островок: круглый → закруглённая плашка  ---------- */
-const searchForm = document.getElementById('search-form');
-const searchInput = document.getElementById('search-input');
-const searchBtn = document.getElementById('search-btn');
+    function closeAll() {
+      document.querySelectorAll('.sheet').forEach(s => s.classList.remove('active'));
+      document.getElementById('overlay').classList.remove('active');
+      document.body.classList.remove('no-scroll');
+    }
 
-searchBtn.addEventListener('click', () => {
-  const isOpen = searchForm.classList.contains('open');
-  if (!isOpen) {                // открываем
-    searchForm.classList.add('open');
-    searchInput.focus();
-  } else {                      // закрываем
-    searchForm.classList.remove('open');
-    searchInput.value = '';
-    filterProducts('');
-  }
-});
+    function openSheet(id) {
+      document.getElementById(id).classList.add('active');
+      document.getElementById('overlay').classList.add('active');
+      document.body.classList.add('no-scroll');
+    }
 
-searchInput.addEventListener('input', e => filterProducts(e.target.value.toLowerCase()));
-function filterProducts(q){
-  const all = Object.values(menu).flat();
-  const filtered = all.filter(p =>
-    p.name.toLowerCase().includes(q) ||
-    p.desc.toLowerCase().includes(q) ||
-    (q.includes('острое') && p.tag==='HOT') ||
-    (q.includes('веган') && p.desc.includes('овощи'))
-  );
-  renderFiltered(filtered.length ? filtered : all);
-}
-function renderFiltered(list){
-  document.getElementById('grid').innerHTML = list.map((p,i)=>`
-    <div class="item" style="animation-delay:${i*0.1}s" onclick="showDetails(${p.id})">
-      ${p.tag?`<div class="badge"><span class="badge-icon">${p.tagIcon}</span><span>${p.tag}</span></div>`:''}
+    function openCart() { openSheet('cart-sheet'); }
+    function openProfile() {
+      const user = tg.initDataUnsafe?.user;
+      if (user) {
+        userData.name = user.first_name || '';
+        userData.phone = user.username ? '@' + user.username : (user.id || '');
+        if (user.photo_url) {
+          document.getElementById('user-avatar').src = user.photo_url;
+          document.getElementById('profile-avatar').src = user.photo_url;
+        }
+      }
+      document.getElementById('profile-name').innerText = userData.name;
+      document.getElementById('profile-phone').innerText = userData.phone;
+      document.getElementById('profile-bonus').innerText = userData.bonus.toLocaleString() + ' ₽';
+      document.getElementById('profile-address').value = userData.address;
+      openSheet('profile-sheet');
+    }
+
+    function saveProfile() {
+      userData.address = document.getElementById('profile-address').value;
+      tg.showAlert('Сохранено!');
+      closeAll();
+    }
+
+    /* ----------  поиск-островок: круглый → закруглённая плашка  ---------- */
+    const searchForm = document.getElementById('search-form');
+    const searchInput = document.getElementById('search-input');
+    const searchBtn = document.getElementById('search-btn');
+
+    searchBtn.addEventListener('click', () => {
+      const isOpen = searchForm.classList.contains('open');
+      if (!isOpen) {                // открываем
+        searchForm.classList.add('open');
+        searchInput.focus();
+      } else {                      // закрываем
+        searchForm.classList.remove('open');
+        searchInput.value = '';
+        filterProducts('');
+      }
+    });
+
+    searchInput.addEventListener('input', e => filterProducts(e.target.value.toLowerCase()));
+    function filterProducts(q) {
+      const all = Object.values(menu).flat();
+      const filtered = all.filter(p =>
+        p.name.toLowerCase().includes(q) ||
+        p.desc.toLowerCase().includes(q) ||
+        (q.includes('острое') && p.tag === 'HOT') ||
+        (q.includes('веган') && p.desc.includes('овощи'))
+      );
+      renderFiltered(filtered.length ? filtered : all);
+    }
+    function renderFiltered(list) {
+      document.getElementById('grid').innerHTML = list.map((p, i) => `
+    <div class="item" style="animation-delay:${i * 0.1}s" onclick="showDetails(${p.id})">
+      ${p.tag ? `<div class="badge"><span class="badge-icon">${p.tagIcon}</span><span>${p.tag}</span></div>` : ''}
       <img src="${p.img}" class="item-img">
       <div style="font-weight:800;font-size:15px">${p.name}</div>
       <div style="font-size:11px;color:var(--text-gray)">${p.meta}</div>
@@ -396,52 +408,53 @@ function renderFiltered(list){
         <span class="p-val">${p.price}₽</span>
       </div>
     </div>`).join('');
-}
+    }
 
-function showAllCategories() {
-    // Убираем активное выделение с табов внизу
-    document.querySelectorAll('.bottom-tab').forEach(t => t.classList.remove('active'));
-    
-    // Собираем все товары из всех категорий объекта menu в один массив
-    const allProducts = Object.values(menu).flat();
-    
-    // Используем уже готовую функцию для отрисовки
-    renderFiltered(allProducts);
-    
-    // Добавляем легкую вибрацию для отклика (для Telegram)
-    tg.HapticFeedback.impactOccurred('medium');
-}
-/* ----------  ТЕМА  ---------- */
-const themeToggle = document.getElementById('theme-toggle');
-const saved = localStorage.getItem('yakuza-theme') || 'light';
-document.body.dataset.theme = saved;
-themeToggle.checked = saved === 'dark';
-themeToggle.addEventListener('change', () => {
-  const newTheme = themeToggle.checked ? 'dark' : 'light';
-  document.body.dataset.theme = newTheme;
-  localStorage.setItem('yakuza-theme', newTheme);
-  tg.HapticFeedback.impactOccurred('light');
-});
+    function showAllCategories() {
+      // Убираем активное выделение с табов внизу
+      document.querySelectorAll('.bottom-tab').forEach(t => t.classList.remove('active'));
 
-/* ----------  ПЛАВАЮЩАЯ КОРЗИНА  ---------- */
-function showMiniCart(){
-  const mc = document.getElementById('mini-cart');
-  mc.style.display='flex';
-  mc.animate([{transform:'scale(0.8)',opacity:0},{transform:'scale(1)',opacity:1}],{duration:200,fill:'forwards'});
-}
-function hideMiniCart(){
-  document.getElementById('mini-cart').style.display='none';
-}
+      // Собираем все товары из всех категорий объекта menu в один массив
+      const allProducts = Object.values(menu).flat();
 
-/* ----------  СВАЙП-ЗАКРЫТИЕ  ---------- */
-document.querySelectorAll('.sheet').forEach(sh=>{
-  const h = new Hammer(sh);
-  h.on('swipedown', closeAll);
-});
+      // Используем уже готовую функцию для отрисовки
+      renderFiltered(allProducts);
 
-initHeroSlider();
-render();
-updateCartUI();
-</script>
+      // Добавляем легкую вибрацию для отклика (для Telegram)
+      tg.HapticFeedback.impactOccurred('medium');
+    }
+    /* ----------  ТЕМА  ---------- */
+    const themeToggle = document.getElementById('theme-toggle');
+    const saved = localStorage.getItem('yakuza-theme') || 'light';
+    document.body.dataset.theme = saved;
+    themeToggle.checked = saved === 'dark';
+    themeToggle.addEventListener('change', () => {
+      const newTheme = themeToggle.checked ? 'dark' : 'light';
+      document.body.dataset.theme = newTheme;
+      localStorage.setItem('yakuza-theme', newTheme);
+      tg.HapticFeedback.impactOccurred('light');
+    });
+
+    /* ----------  ПЛАВАЮЩАЯ КОРЗИНА  ---------- */
+    function showMiniCart() {
+      const mc = document.getElementById('mini-cart');
+      mc.style.display = 'flex';
+      mc.animate([{ transform: 'scale(0.8)', opacity: 0 }, { transform: 'scale(1)', opacity: 1 }], { duration: 200, fill: 'forwards' });
+    }
+    function hideMiniCart() {
+      document.getElementById('mini-cart').style.display = 'none';
+    }
+
+    /* ----------  СВАЙП-ЗАКРЫТИЕ  ---------- */
+    document.querySelectorAll('.sheet').forEach(sh => {
+      const h = new Hammer(sh);
+      h.on('swipedown', closeAll);
+    });
+
+    initHeroSlider();
+    render();
+    updateCartUI();
+  </script>
 </body>
+
 </html>
