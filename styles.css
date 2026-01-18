@@ -6,23 +6,25 @@
     --text-gray: #6c6c70;
     --accent: #ff2d55;
     --accent-light: #32d74b;
-    --glass: rgba(255, 255, 255, 0.4);
-    --border: rgba(255, 255, 255, 0.4);
-    /* Светлая граница для эффекта отблеска */
+    --glass: rgba(255, 255, 255, 0.7); /* Чуть плотнее для светлой */
+    --border: rgba(0, 0, 0, 0.08);
+    --glass-edge: rgba(255, 255, 255, 0.5); /* Блик на грани */
     --shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.06);
     --radius: 24px;
+    --header-height: 44px;
+    --island-shadow: 0px 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 body[data-theme="dark"] {
     --bg: #000000;
-    --card: #111113;
+    --card: #1c1c1e;
     --text: #ffffff;
     --text-gray: #8e8e93;
-    --accent: #ff2d55;
-    --accent-light: #b1ff5c;
-    --glass: rgba(28, 28, 30, 0.5);
-    --border: rgba(255, 255, 255, 0.12);
-    --shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.3);
+    --glass: rgba(28, 28, 30, 0.65); /* Глубокий темный графит */
+    --border: rgba(255, 255, 255, 0.05);
+    --glass-edge: rgba(255, 255, 255, 0.08); /* Тонкий светящийся контур */
+    --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    --island-shadow: 0px 4px 15px rgba(0, 0, 0, 0.5);
 }
 
 body {
@@ -59,83 +61,94 @@ body {
 }
 
 /* ---------- 1. верхняя строка  ---------- */
+/* ---------- 1. ШАПКА: ОСТРОВКИ ---------- */
+
 .top-line {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 10px 20px 0;
+    justify-content: space-between; /* Лого слева, группа справа */
+    padding: 12px 16px;
     position: sticky;
     top: 0;
-    /* у верхнего края */
-    z-index: 100;
+    z-index: 1000;
+}
+
+.top-right-group {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end; /* Прижимает элементы вправо */
+    gap: 10px; 
+    flex-grow: 1; /* Позволяет группе расширяться влево до логотипа */
+    transition: all 0.35s ease;
+}
+
+/* Общий стиль для всех "островков" */
+.logo-island, 
+.search-form, 
+.user-avatar-wrapper {
+    height: var(--header-height);
+    background: var(--glass);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    
+    /* Двойная граница: внешняя темная + внутренняя светлая для объема */
+    border: 0.5px solid var(--border);
+    box-shadow: 
+        var(--island-shadow), 
+        inset 0 0 0 0.5px var(--glass-edge); 
+    
+    border-radius: 22px;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .logo-island {
-    background: var(--glass);
-    backdrop-filter: blur(25px) saturate(180%);
-    border: 0.5px solid var(--border);
-    border-radius: var(--radius);
-    box-shadow: 0px 0px 9px 3px rgba(0, 0, 0, 0.06), inset 0 0 0 1px rgb(211 211 211 / 33%);
-    padding: 8px 14px;
+    padding: 0 16px;
     font-weight: 900;
-    font-size: 18px;
-    letter-spacing: -0.5px;
-    z-index: 2;
-    position: relative;
+    font-size: 16px;
+    color: var(--text);
+    flex-shrink: 0;
+    width: auto; /* Запрещаем растягиваться */
+    margin-right: 10px;
 }
 
-.top-right {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    z-index: 3;
-}
-
-/* ---------- поиск-островок: круглый → закруглённая плашка ---------- */
-/* === поиск-островок: круглый → тянется влево === */
+/* Поиск */
 .search-form {
     position: relative;
-    width: 44px;
-    /* круг */
+    width: 44px; /* В закрытом виде — кружок */
     height: 44px;
-    margin-left: auto;
-    margin-right: 4px;
-    /* прижато к правому краю */
-    flex-shrink: 0;
-    transition: width .35s cubic-bezier(.4, 0, .2, 1);
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-    /* растём влево */
+.search-form.open {
+    /* flex: 1 заставляет поиск занять всё место до логотипа */
+    flex: 1; 
+    /* Ограничим максимум, чтобы на планшетах поиск не был бесконечным */
+    max-width: 100%; 
 }
 
 .search-input {
-    position: absolute;
-    top: 0;
-    right: 0;
     width: 100%;
-    height: 44px;
+    height: 100%;
+    background: transparent;
     border: none;
     outline: none;
-    
-    /* Эффект стекла iOS */
-    background: var(--glass);
-    backdrop-filter: blur(25px) saturate(180%);
-    -webkit-backdrop-filter: blur(25px) saturate(180%); /* Для Safari/iPhone */
-    
-    /* Граница и тени */
-
-    border-radius: 22px;
-    box-shadow: 0px 0px 9px 3px rgba(0, 0, 0, 0.06), inset 0 0 0 1px rgb(211 211 211 / 33%);
-    
-    padding: 0 42px 0 0;
-    
-    font-size: 14px;
+    padding: 0;
     color: var(--text);
-    pointer-events: none;
-    box-sizing: border-box;
-    transition: width .35s cubic-bezier(.4, 0, .2, 1), background .3s;
+    /* Полностью скрываем текст в закрытом виде */
+    font-size: 0;
+    opacity: 0;
 }
 
+.search-form.open .search-input {
+    padding: 0 40px 0 16px;
+    font-size: 14px;
+    opacity: 1;
+}
 
+/* Кнопка с иконкой лупы/крестика */
 .search-btn {
     position: absolute;
     right: 0;
@@ -144,91 +157,95 @@ body {
     border: none;
     background: none;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     z-index: 2;
 }
 
-/* лупа */
-.search-btn::before {
+/* Рисуем иконку лупы */
+/* Базовые стили */
+.search-btn::before, .search-btn::after {
     content: "";
     position: absolute;
+    background: var(--text-gray);
+    transition: all 0.25s ease;
     left: 50%;
     top: 50%;
-    width: 16px;
-    height: 16px;
-    border: 2px solid var(--text-gray);
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    transition: all .25s;
 }
 
-.search-btn::after {
-    content: "";
-    position: absolute;
-    left: calc(50% + 6px);
-    top: calc(50% + 10px);
-    width: 8px;
-    height: 2px;
-    background: var(--text-gray);
-    transform: translate(-50%, -50%) rotate(45deg);
-    transition: all .25s;
+/* Кольцо лупы */
+.search-btn::before {
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--text-gray);
+    border-radius: 50%;
+    background: none;
+    /* Центрируем кольцо и чуть смещаем его, чтобы ножка смотрелась натурально */
+    transform: translate(-65%, -65%); 
 }
+
+/* Ножка лупы — ДЛИННАЯ */
+.search-btn::after {
+    width: 2px;
+    height: 9px; /* Вот твоя длинная ножка */
+    background: var(--text-gray);
+    border-radius: 1px;
+    /* Поворот и точная стыковка с кольцом */
+    transform: translate(2px, 2px) rotate(-45deg);
+    transform-origin: top center;
+}
+
+/* ---------- Анимация в крестик (ФИКС) ---------- */
+/* ---------- ИДЕАЛЬНЫЙ СИММЕТРИЧНЫЙ КРЕСТИК ---------- */
 
 .search-form.open .search-btn::before,
 .search-form.open .search-btn::after {
-    width: 22px;
+    /* 1. Делаем линии одинаковыми */
+    width: 18px; 
     height: 2px;
     background: var(--text);
+    border: none;
+    border-radius: 1px;
+    
+    /* 2. Позиционируем ровно в центре кнопки */
+    position: absolute;
     left: 50%;
     top: 50%;
-    margin: 0;
+    
+    /* 3. Магия: сдвигаем на 50% назад, чтобы центр вращения был в центре линии */
+    /* Теперь не нужно высчитывать пиксели маржинами */
+    transform-origin: center;
 }
 
-/* раскрытие влево */
-.search-form.open {
-    width: 200px;
-    overflow: visible;
-    /* форма тянется влево */
-}
-
-.search-form.open .search-input {
-    width: 200px;
-    pointer-events: auto;
-}
-
-/* крестик (длиннее, чтобы видно) */
 .search-form.open .search-btn::before {
-    border: none;
-    width: 20px;
-    /* ← было 18 px */
-    height: 2px;
-    background: var(--text);
+    /* Сначала центрируем через translate, потом поворачиваем */
     transform: translate(-50%, -50%) rotate(45deg);
 }
 
 .search-form.open .search-btn::after {
-    width: 20px;
-    /* ← было 18 px */
-    height: 2px;
-    background: var(--text);
+    /* Точно так же для второй линии */
     transform: translate(-50%, -50%) rotate(-45deg);
-}
-.search-input::placeholder {
-    color: transparent; /* Скрываем текст в закрытом виде */
-    transition: color 0.2s;
-}
-.search-form.open .search-input::placeholder {
-    color: var(--text-gray); /* Показываем при открытии */
+    /* Убираем старые маржины, если они остались от ножки лупы */
+    margin: 0; 
 }
 
-.user-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    border: 2px solid var(--accent);
-    object-fit: cover;
+/* Контейнер аватара */
+.user-avatar-wrapper {
+    width: 44px;
+    padding: 4px;
+    justify-content: center;
+    flex-shrink: 0;
     cursor: pointer;
 }
 
+.user-avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: none; 
+}
 /* ---------- промо ---------- */
 .hero-slider {
     position: relative;

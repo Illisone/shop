@@ -14,12 +14,16 @@
 <!-- ЛОГО в островке + поиск-островок + аватар -->
 <div class="top-line">
   <div class="logo-island" onclick="showAllCategories()" style="cursor: pointer;">YAKUZA</div>
-  <div class="top-right">
+  
+  <div class="top-right-group">
     <form class="search-form" id="search-form">
-      <input id="search-input" type="text" placeholder="Поиск товаров" class="search-input">
+      <input id="search-input" type="text" placeholder="Поиск" class="search-input">
       <button type="button" class="search-btn" id="search-btn"></button>
     </form>
-    <img id="user-avatar" class="user-avatar" src="https://via.placeholder.com/100" alt="" onclick="openProfile()">
+
+    <div class="user-avatar-wrapper" onclick="openProfile()">
+      <img id="user-avatar" class="user-avatar" src="https://via.placeholder.com/100" alt="">
+    </div>
   </div>
 </div>
 
