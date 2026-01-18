@@ -128,23 +128,21 @@
         <input type="text" id="profile-address" class="input-style" placeholder="Улица, дом, квартира">
       </div>
       <div style="margin-top:20px; display: flex; flex-direction: column; gap: 15px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 100;">
-        <div style="font-size:14px; color:var(--text-gray);">Тёмная тема</div>
-        <label class="theme-switch">
-            <input type="checkbox" id="theme-toggle">
-            <span class="slider"></span>
-            <span class="labels">🌙</span>
-        </label>
-    </div>
+  <div style="display: flex; justify-content: space-between; align-items: center;">
+    <div style="font-size:14px; color:var(--text-gray);">Тёмная тема</div>
+    <label class="theme-switch">
+      <input type="checkbox" id="theme-toggle"> 
+      <span class="slider theme-slider"></span> <span class="labels">🌙</span>
+    </label>
+  </div>
 
-    <div style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 101;">
-        <div style="font-size:14px; color:var(--text-gray);">Виброотклик</div>
-        <label class="theme-switch">
-            <input type="checkbox" id="haptic-toggle">
-            <span class="slider"></span>
-            <span class="labels">📳</span>
-        </label>
-    </div>
+  <div style="display: flex; justify-content: space-between; align-items: center;">
+    <div style="font-size:14px; color:var(--text-gray);">Виброотклик</div>
+    <label class="theme-switch">
+      <input type="checkbox" id="haptic-toggle"> 
+      <span class="slider haptic-slider"></span> <span class="labels">📳</span>
+    </label>
+  </div>
 </div>
     </div>
     <button class="btn-main" onclick="saveProfile()">Сохранить</button>
@@ -535,36 +533,40 @@
       // Добавляем легкую вибрацию для отклика (для Telegram)
       tg.HapticFeedback.impactOccurred('medium');
     }
-    /* ---------- ФИНАЛЬНЫЕ НАСТРОЙКИ ---------- */
-const tglTheme = document.getElementById('theme-toggle');
-const tglHaptic = document.getElementById('haptic-toggle');
+    /* ---------- ФИНАЛЬНЫЙ РАБОЧИЙ КОД ---------- */
+(function() {
+    function initToggles() {
+        const tTheme = document.getElementById('theme-toggle');
+        const tHaptic = document.getElementById('haptic-toggle');
 
-// Инициализация темы
-if (tglTheme) {
-    tglTheme.checked = document.body.dataset.theme === 'dark';
-    tglTheme.onchange = function() {
-        const isDark = tglTheme.checked;
-        document.body.dataset.theme = isDark ? 'dark' : 'light';
-        localStorage.setItem('yakuza-theme', isDark ? 'dark' : 'light');
-        if (settings.hapticEnabled) tg.HapticFeedback.impactOccurred('light');
-    };
-}
-
-// Инициализация вибро
-if (tglHaptic) {
-    // Читаем из памяти правильно
-    const isHaptic = localStorage.getItem('haptic-enabled') !== 'false';
-    settings.hapticEnabled = isHaptic;
-    tglHaptic.checked = isHaptic;
-
-    tglHaptic.onchange = function() {
-        settings.hapticEnabled = tglHaptic.checked;
-        localStorage.setItem('haptic-enabled', settings.hapticEnabled);
-        if (settings.hapticEnabled) {
-            tg.HapticFeedback.notificationOccurred('success');
+        if (tTheme) {
+            tTheme.checked = document.body.dataset.theme === 'dark';
+            tTheme.addEventListener('change', () => {
+                const isDark = tTheme.checked;
+                document.body.dataset.theme = isDark ? 'dark' : 'light';
+                localStorage.setItem('yakuza-theme', isDark ? 'dark' : 'light');
+                if (settings.hapticEnabled && window.tg) tg.HapticFeedback.impactOccurred('light');
+            });
         }
-    };
-}
+
+        if (tHaptic) {
+            // Читаем из localStorage правильно
+            const savedHaptic = localStorage.getItem('haptic-enabled') !== 'false';
+            tHaptic.checked = savedHaptic;
+            settings.hapticEnabled = savedHaptic;
+
+            tHaptic.addEventListener('change', () => {
+                settings.hapticEnabled = tHaptic.checked;
+                localStorage.setItem('haptic-enabled', settings.hapticEnabled);
+                if (settings.hapticEnabled && window.tg) tg.HapticFeedback.notificationOccurred('success');
+            });
+        }
+    }
+
+    // Запускаем
+    if (document.readyState === 'complete') initToggles();
+    else window.addEventListener('load', initToggles);
+})();
     /* ----------  ПЛАВАЮЩАЯ КОРЗИНА  ---------- */
     function showMiniCart() {
       const mc = document.getElementById('mini-cart');
@@ -580,6 +582,7 @@ if (tglHaptic) {
       const h = new Hammer(sh);
       h.on('swipedown', closeAll);
     });
+    
 
     initHeroSlider();
     render();
