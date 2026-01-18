@@ -13,7 +13,7 @@
 
 <!-- ЛОГО в островке + поиск-островок + аватар -->
 <div class="top-line">
-  <div class="logo-island">YAKUZA</div>
+  <div class="logo-island" onclick="showAllCategories()" style="cursor: pointer;">YAKUZA</div>
   <div class="top-right">
     <form class="search-form" id="search-form">
       <input id="search-input" type="text" placeholder="Поиск товаров" class="search-input">
@@ -381,6 +381,19 @@ function renderFiltered(list){
     </div>`).join('');
 }
 
+function showAllCategories() {
+    // Убираем активное выделение с табов внизу
+    document.querySelectorAll('.bottom-tab').forEach(t => t.classList.remove('active'));
+    
+    // Собираем все товары из всех категорий объекта menu в один массив
+    const allProducts = Object.values(menu).flat();
+    
+    // Используем уже готовую функцию для отрисовки
+    renderFiltered(allProducts);
+    
+    // Добавляем легкую вибрацию для отклика (для Telegram)
+    tg.HapticFeedback.impactOccurred('medium');
+}
 /* ----------  ТЕМА  ---------- */
 const themeToggle = document.getElementById('theme-toggle');
 const saved = localStorage.getItem('yakuza-theme') || 'light';
