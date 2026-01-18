@@ -188,11 +188,24 @@ function initHeroSlider(){
   }, 3000);
 }
 
-function switchTab(tab){
+function switchTab(tab) {
   currentTab = tab;
-  document.querySelectorAll('.bottom-tab').forEach(t=>t.classList.remove('active'));
-  event.currentTarget.classList.add('active');
-  render();
+  
+  // 1. Удаляем активный класс у всех кнопок
+  document.querySelectorAll('.bottom-tab').forEach(t => t.classList.remove('active'));
+  
+  // 2. Находим кнопку, на которую нажали, и добавляем ей класс
+  // event.currentTarget — это именно та кнопка, по которой попал палец
+  if (event && event.currentTarget) {
+    event.currentTarget.classList.add('active');
+  }
+
+  // 3. Добавляем вибрацию для телефона (Haptic Feedback)
+  if (window.Telegram && Telegram.WebApp) {
+    Telegram.WebApp.HapticFeedback.impactOccurred('light');
+  }
+  
+  render(); // перерисовываем товары
 }
 
 function render(){

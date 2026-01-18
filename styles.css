@@ -386,6 +386,7 @@ body {
 }
 
 .bottom-tab {
+    position: relative;
     flex: 1;
     height: 100%; /* Таб занимает ровно 64px */
     display: flex;
@@ -400,6 +401,7 @@ body {
     font-weight: 600;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
+
 }
 
 /* Активная иконка теперь плавно увеличивается */
@@ -415,12 +417,21 @@ body {
 }
 
 .bottom-tab.active .bottom-icon {
-    transform: translateY(-4px) scale(1.1); /* Приподнимаем и чуть увеличиваем */
+    transform: translateY(-5px) scale(1.1); /* Оставляем только подъем */
     color: var(--accent-light);
-    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Эффект прыжка */
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: inline-block;
+    /* Убедись, что здесь нет свойства box-shadow или text-shadow */
 }
-
-
+.bottom-tab.active::after {
+    position: absolute;
+    bottom: 8px;
+    width: 4px;
+    height: 4px;
+    background: var(--accent-light);
+    border-radius: 50%;
+    box-shadow: 0 0 5px var(--accent-light);
+}
 #mini-cart {
     position: fixed;
     bottom: 80px;
