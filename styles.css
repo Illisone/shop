@@ -94,33 +94,33 @@ body {
 .search-form {
     position: relative;
     width: 44px;
+    /* круг */
     height: 44px;
     margin-left: auto;
     /* прижато к правому краю */
     flex-shrink: 0;
-    transform-origin: right center;
     transition: width .35s cubic-bezier(.4, 0, .2, 1);
+    transform-origin: right center;
+    /* растём влево */
 }
 
 .search-input {
-    position: absolute;
-    inset: 0;
-    border: none;
-    outline: none;
-    background: var(--glass);
-    backdrop-filter: blur(20px);
-    border: 0.5px solid var(--border);
-    border-radius: 22px;
-    width: 200px;
-    /* фикс. ширина будущей плашки */
-    height: 44px;
-    padding: 0 42px 0 14px;
-    font-size: 14px;
-    color: var(--text);
-    pointer-events: none;
-    transform: scaleX(0);
-    /* спрятана вправо */
-    transition: transform .35s cubic-bezier(.4, 0, .2, 1);
+  position: absolute;
+  inset: 0;
+  border: none;
+  outline: none;
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  border: 0.5px solid var(--border);
+  border-radius: 22px;
+  width: 100%;              /* занимает всю ширину формы */
+  height: 44px;
+  padding: 0 42px 0 14px;
+  font-size: 14px;
+  color: var(--text);
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity .25s .1s;
 }
 
 .search-btn {
@@ -361,7 +361,7 @@ body {
     bottom: 80px;
     right: 20px;
     width: 150px;
-    height: 50px;
+    height: 35px;
     background: var(--accent);
     color: #fff;
     border-radius: 25px;
