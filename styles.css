@@ -415,8 +415,11 @@ body {
 }
 
 .bottom-tab.active .bottom-icon {
-    transform: scale(1.1);
+    transform: translateY(-4px) scale(1.1); /* Приподнимаем и чуть увеличиваем */
+    color: var(--accent-light);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Эффект прыжка */
 }
+
 
 #mini-cart {
     position: fixed;
