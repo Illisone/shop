@@ -143,20 +143,22 @@ let userData = {name:'—',phone:'—',address:'',bonus:1250};
 
 const menu = {
   rolls: [
-    {id:1,name:"Мечта кота",price:1530,meta:"32 шт | 1.1 кг",img:"https://images.unsplash.com/photo/1579871494447-9811cf80d66c?w=600",desc:"Филадельфия огурец, Филадельфия бекон, Темпура чикен, Темпура тамаго лосось.",tag:"HOT",tagIcon:"🌶️"},
-    {id:2,name:"Сет Зимний",price:1945,meta:"64 шт | 2.2 кг",img:"https://images.unsplash.com/photo/1583623025817-d180a2221d0a?w=600",desc:"Огромный сет для большой компании.",tag:"NEW",tagIcon:"🔥"},
-    {id:3,name:"Филадельфия",price:650,meta:"8 шт | 280 г",img:"https://images.unsplash.com/photo/1553621042-f6e147245754?w=600",desc:"Классический ролл со свежим лососем.",tag:"",tagIcon:""},
-    {id:4,name:"Калифорния",price:590,meta:"8 шт | 250 г",img:"https://images.unsplash.com/photo/1559466273-d95e72debaf8?w=600",desc:"Снежный краб, огурец и икра тобико.",tag:"",tagIcon:""}
+    {id:1, name:"Мечта кота", price:1530, meta:"32 шт | 1.1 кг", img:"https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=600&q=80", desc:"Филадельфия огурец, Филадельфия бекон, Темпура чикен, Темпура тамаго лосось.", tag:"HOT", tagIcon:"🌶️"},
+    {id:2, name:"Сет Зимний", price:1945, meta:"64 шт | 2.2 кг", img:"https://images.unsplash.com/photo-1583623025817-d180a2221d0a?w=600&q=80", desc:"Огромный сет для большой компании.", tag:"NEW", tagIcon:"🔥"},
+    {id:3, name:"Филадельфия", price:650, meta:"8 шт | 280 г", img:"https://images.unsplash.com/photo-1553621042-f6e147245754?w=600&q=80", desc:"Классический ролл со свежим лососем.", tag:"", tagIcon:""},
+    {id:4, name:"Калифорния", price:590, meta:"8 шт | 250 г", img:"https://images.unsplash.com/photo-1559466273-d95e72debaf8?w=600&q=80", desc:"Снежный краб, огурец и икра тобико.", tag:"", tagIcon:""}
   ],
   wok: [
-    {id:5,name:"Курица вок",price:490,meta:"320 г",img:"https://images.unsplash.com/photo/1625938146369-adc83368bda7?w=600",desc:"Курица, овощи, соус терияки.",tag:"",tagIcon:""},
-    {id:6, name:"Говядина вок", price:590, meta:"320 г", img:"https://images.unsplash.com/photo-1512058560366-cd2427ff06d3?w=600", desc:"Говядина, овощи, соус чили.", tag:"HOT", tagIcon:"🌶️"},
-    {id:7,name:"Гедза",price:290,meta:"6 шт",img:"https://images.unsplash.com/photo/1617093727343-374698b1b08d?w=600",desc:"Курица, свинина, овощи.",tag:"",tagIcon:""},
-    {id:8,name:"Спайси эдамаме",price:190,meta:"120 г",img:"https://images.unsplash.com/photo/1609501676725-7186f017a4b7?w=600",desc:"Острый соус, кунжут.",tag:"HOT",tagIcon:"🌶️"}
+    {id:5, name:"Курица вок", price:490, meta:"320 г", img:"https://images.unsplash.com/photo-1512058560366-cd2427ff06d3?w=600&q=80", desc:"Курица, овощи, соус терияки.", tag:"", tagIcon:""},
+    {id:6, name:"Говядина вок", price:590, meta:"320 г", img:"https://images.unsplash.com/photo-1543826173-70651703c5a4?w=600&q=80", desc:"Говядина, овощи, соус чили.", tag:"HOT", tagIcon:"🌶️"}
+  ],
+  snacks: [
+    {id:7, name:"Гедза", price:290, meta:"6 шт", img:"https://images.unsplash.com/photo-1617093727343-374698b1b08d?w=600&q=80", desc:"Японские пельмени с начинкой на выбор.", tag:"", tagIcon:""},
+    {id:8, name:"Спайси эдамаме", price:190, meta:"120 г", img:"https://images.unsplash.com/photo-1609501676725-7186f017a4b7?w=600&q=80", desc:"Молодые бобы с острым соусом.", tag:"HOT", tagIcon:"🌶️"}
   ],
   drinks: [
-    {id:9,name:"Coca-Cola",price:120,meta:"0.5 л",img:"https://images.unsplash.com/photo/1625772299848-391b6a87d281?w=600",desc:"Холодная, газированная.",tag:"",tagIcon:""},
-    {id:10, name:"ФRESH-лимонад", price:180, meta:"0.4 л", img:"https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=600", desc:"Лимон, мята, лёд.", tag:"NEW", tagIcon:"🔥"}
+    {id:9, name:"Coca-Cola", price:120, meta:"0.5 л", img:"https://images.unsplash.com/photo-1622708782596-13d5e5ac5a9e?w=600&q=80", desc:"Освежающая классика.", tag:"", tagIcon:""},
+    {id:10, name:"ФRESH-лимонад", price:180, meta:"0.4 л", img:"https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=600&q=80", desc:"Лимон, мята, натуральный сок.", tag:"NEW", tagIcon:"🔥"}
   ]
 };
 
@@ -167,9 +169,9 @@ const extras = [
 ];
 
 const heroImages = [
-  {img:"https://images.unsplash.com/photo-1553621042-f6e147245754?w=1200",txt:"Подарок к заказу от 2000₽"},
-  {img:"https://images.unsplash.com/photo/1579584425555-c3ce17fd4351?w=1200",txt:"Скидка -15% на самовывоз"},
-  {img:"https://images.unsplash.com/photo/1611143669185-af224c5e3252?w=1200",txt:"Новый сет «Самурай»"}
+  {img:"https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=1200&q=80", txt:"Подарок к заказу от 2000₽"},
+  {img:"https://images.unsplash.com/photo-1611143669185-af224c5e3252?w=1200&q=80", txt:"Скидка -15% на самовывоз"},
+  {img:"https://images.unsplash.com/photo-1553621042-f6e147245754?w=1200&q=80", txt:"Новый сет «Самурай»"}
 ];
 
 let heroIndex = 0;
