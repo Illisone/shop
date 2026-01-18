@@ -23,8 +23,10 @@ body[data-theme="dark"] {
     --border: rgba(255, 255, 255, 0.08);
     --shadow: 0 8px 32px rgba(255, 45, 85, 0.25);
 }
+
 body {
-    overscroll-behavior: none;   /* запрет растяжения экрана */
+    overscroll-behavior: none;
+    /* запрет растяжения экрана */
 }
 
 /* ========== 2. 120 Гц АНИМАЦИИ ========== */
@@ -61,7 +63,10 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 10px 20px 0;
-    position: relative;
+    position: sticky;
+    top: 0;
+    /* у верхнего края */
+    z-index: 100;
 }
 
 .logo-island {
@@ -87,99 +92,112 @@ body {
 /* ---------- поиск-островок: круглый → закруглённая плашка ---------- */
 /* === поиск-островок: круглый → тянется влево === */
 .search-form {
-  position: relative;
-  width: 44px;
-  height: 44px;
-  margin-left: auto;          /* прижато к правому краю */
-  flex-shrink: 0;
-  transform-origin: right center;
-  transition: width .35s cubic-bezier(.4,0,.2,1);
+    position: relative;
+    width: 44px;
+    height: 44px;
+    margin-left: auto;
+    /* прижато к правому краю */
+    flex-shrink: 0;
+    transform-origin: right center;
+    transition: width .35s cubic-bezier(.4, 0, .2, 1);
 }
 
 .search-input {
-  position: absolute;
-  inset: 0;
-  border: none;
-  outline: none;
-  background: var(--glass);
-  backdrop-filter: blur(20px);
-  border: 0.5px solid var(--border);
-  border-radius: 22px;
-  width: 200px;               /* фикс. ширина будущей плашки */
-  height: 44px;
-  padding: 0 42px 0 14px;
-  font-size: 14px;
-  color: var(--text);
-  pointer-events: none;
-  transform: scaleX(0);/* спрятана вправо */
-  transition: transform .35s cubic-bezier(.4,0,.2,1);
+    position: absolute;
+    inset: 0;
+    border: none;
+    outline: none;
+    background: var(--glass);
+    backdrop-filter: blur(20px);
+    border: 0.5px solid var(--border);
+    border-radius: 22px;
+    width: 200px;
+    /* фикс. ширина будущей плашки */
+    height: 44px;
+    padding: 0 42px 0 14px;
+    font-size: 14px;
+    color: var(--text);
+    pointer-events: none;
+    transform: scaleX(0);
+    /* спрятана вправо */
+    transition: transform .35s cubic-bezier(.4, 0, .2, 1);
 }
 
 .search-btn {
-  position: absolute;
-  right: 0;
-  width: 44px;
-  height: 44px;
-  border: none;
-  background: none;
-  cursor: pointer;
-  z-index: 2;
+    position: absolute;
+    right: 0;
+    width: 44px;
+    height: 44px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    z-index: 2;
 }
+
 /* лупа */
 .search-btn::before {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 16px;
-  height: 16px;
-  border: 2px solid var(--text-gray);
-  border-radius: 50%;
-  transform: translate(-50%,-50%);
-  transition: all .25s;
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--text-gray);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: all .25s;
 }
+
 .search-btn::after {
-  content: "";
-  position: absolute;
-  left: calc(50% + 6px);
-  top: calc(50% + 10px);
-  width: 8px;
-  height: 2px;
-  background: var(--text-gray);
-  transform: translate(-50%,-50%) rotate(45deg);
-  transition: all .25s;
+    content: "";
+    position: absolute;
+    left: calc(50% + 6px);
+    top: calc(50% + 10px);
+    width: 8px;
+    height: 2px;
+    background: var(--text-gray);
+    transform: translate(-50%, -50%) rotate(45deg);
+    transition: all .25s;
 }
+
 .search-form.open .search-btn::before,
 .search-form.open .search-btn::after {
-  width: 22px;
-  height: 2px;
-  background: var(--text);
-  left: 50%;
-  top: 50%;
-  margin: 0;
+    width: 22px;
+    height: 2px;
+    background: var(--text);
+    left: 50%;
+    top: 50%;
+    margin: 0;
 }
 
 /* раскрытие влево */
 .search-form.open {
-  width: 200px;               /* форма тянется влево */
+    width: 200px;
+    /* форма тянется влево */
 }
+
 .search-form.open .search-input {
-  transform: translateX(0);   /* поле выезжает */
-  pointer-events: auto;
+    transform: translateX(0);
+    /* поле выезжает */
+    pointer-events: auto;
 }
+
 /* крестик (длиннее, чтобы видно) */
 .search-form.open .search-btn::before {
-  border: none;
-  width: 20px;                /* ← было 18 px */
-  height: 2px;
-  background: var(--text);
-  transform: translate(-50%,-50%) rotate(45deg);
+    border: none;
+    width: 20px;
+    /* ← было 18 px */
+    height: 2px;
+    background: var(--text);
+    transform: translate(-50%, -50%) rotate(45deg);
 }
+
 .search-form.open .search-btn::after {
-  width: 20px;                /* ← было 18 px */
-  height: 2px;
-  background: var(--text);
-  transform: translate(-50%,-50%) rotate(-45deg);
+    width: 20px;
+    /* ← было 18 px */
+    height: 2px;
+    background: var(--text);
+    transform: translate(-50%, -50%) rotate(-45deg);
 }
 
 .user-avatar {
@@ -698,6 +716,7 @@ body[data-theme="dark"] .slider:before {
         transform: translateY(30px);
         opacity: 0
     }
+
     to {
         transform: translateY(0);
         opacity: 1
