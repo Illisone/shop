@@ -4,325 +4,218 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Quicksand:wght@500;700&display=swap');
-
-        :root {
-            --bg: #1a1614;
-            --card: #25201d;
-            --accent: #d4a373; /* Цвет пенки латте */
-            --accent-light: #e6ccb2;
-            --text: #fdfaf7;
-            --gray: #8b8178;
-            --tab-bg: rgba(37, 32, 29, 0.9);
-            --radius: 24px;
-            --shadow: 0 8px 24px rgba(0,0,0,0.2);
-        }
-
-        body {
-            font-family: 'Quicksand', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            margin: 0; padding: 0;
-            overflow-x: hidden;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        /* ШАПКА В СТИЛЕ СУШИ */
-        .top-line {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: calc(15px + env(safe-area-inset-top, 0px)) 16px 15px;
-            position: sticky;
-            top: 0; z-index: 1000;
-            background: var(--bg);
-        }
-
-        .logo-island {
-            background: var(--accent);
-            color: #1a1614;
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-weight: 800;
-            font-family: 'Montserrat';
-            box-shadow: 0 4px 15px rgba(212, 163, 115, 0.3);
-        }
-
-        .search-mini {
-            flex: 1;
-            margin: 0 12px;
-            background: var(--card);
-            border-radius: 15px;
-            padding: 8px 12px;
-            display: flex;
-            align-items: center;
-            border: 1px solid rgba(212, 163, 115, 0.1);
-        }
-
-        .user-avatar {
-            width: 38px; height: 38px;
-            border-radius: 50%;
-            border: 2px solid var(--accent);
-            object-fit: cover;
-        }
-
-        /* СЕТКА ТОВАРОВ */
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            padding: 0 16px 120px;
-        }
-
-        .product-card {
-            background: var(--card);
-            border-radius: var(--radius);
-            padding: 12px;
-            position: relative;
-            animation: bounceIn 0.5s ease;
-            border: 1px solid rgba(255,255,255,0.03);
-        }
-
-        @keyframes bounceIn {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        .product-img {
-            width: 100%;
-            aspect-ratio: 1/1;
-            border-radius: 18px;
-            object-fit: cover;
-            margin-bottom: 10px;
-        }
-
-        .price-badge {
-            background: var(--accent);
-            color: #1a1614;
-            padding: 4px 10px;
-            border-radius: 10px;
-            font-weight: 800;
-            font-size: 14px;
-        }
-
-        /* НИЖНЯЯ ПАНЕЛЬ */
-        .bottom-nav {
-            position: fixed;
-            bottom: calc(20px + env(safe-area-inset-bottom, 0px));
-            left: 16px; right: 16px;
-            background: var(--tab-bg);
-            backdrop-filter: blur(15px);
-            height: 70px;
-            border-radius: 30px;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            box-shadow: var(--shadow);
-            z-index: 1000;
-            border: 1px solid rgba(212, 163, 115, 0.1);
-        }
-
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: var(--gray);
-            font-size: 10px;
-            font-weight: 700;
-            text-decoration: none;
-        }
-
-        .nav-item.active { color: var(--accent); }
-        .nav-icon { font-size: 20px; margin-bottom: 4px; }
-
-        /* КОРЗИНА */
-        .cart-float {
-            position: fixed;
-            bottom: 105px; right: 20px;
-            background: var(--accent);
-            color: #1a1614;
-            padding: 12px 20px;
-            border-radius: 25px;
-            font-weight: 800;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-            display: none;
-            z-index: 999;
-            animation: slideUp 0.3s ease;
-        }
-
-        @keyframes slideUp {
-            from { transform: translateY(50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        /* ШТОРКА */
-        .sheet {
-            position: fixed;
-            bottom: 0; left: 0; right: 0;
-            background: var(--card);
-            border-radius: 30px 30px 0 0;
-            padding: 25px;
-            transform: translateY(100%);
-            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 2000;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-        .sheet.active { transform: translateY(0); }
-        .overlay {
-            position: fixed; inset: 0;
-            background: rgba(0,0,0,0.6);
-            display: none; z-index: 1500;
-        }
-
-        .btn-order {
-            background: var(--accent);
-            color: #1a1614;
-            width: 100%;
-            border: none;
-            padding: 18px;
-            border-radius: 20px;
-            font-weight: 800;
-            font-size: 16px;
-            margin-top: 15px;
-        }
-    </style>
+    <link rel="stylesheet" href="cofe.styles.css">
+    <title>Coffee Winter Art</title>
 </head>
 <body>
+    <canvas id="mainCanvas"></canvas>
 
-    <div class="top-line">
-        <div class="logo-island">BEANS</div>
-        <div class="search-mini">
-            <span style="font-size:14px; color:var(--gray)">🔍 Поиск кофе...</span>
+    <div class="header">
+        <div class="logo-island">COFFEE <span>PRO</span></div>
+        <div class="cart-btn" onclick="openCart()">
+            <span id="cart-count">0</span>
+            <i>🛍️</i>
         </div>
-        <img id="user-avatar" class="user-avatar" src="https://via.placeholder.com/100">
     </div>
 
-    <div class="grid" id="menu-grid"></div>
-
-    <div id="mini-cart" class="cart-float" onclick="openCart()">
-        ☕ <span id="cart-count">0</span> предм. — <span id="cart-total">0</span>₽
+    <div class="container">
+        <div class="welcome">
+            <h1>Твой идеальный<br><span>зимний кофе</span></h1>
+        </div>
+        <div class="menu-grid" id="menu-grid"></div>
     </div>
-
-    <nav class="bottom-nav">
-        <div class="nav-item active" onclick="changeCat('coffee')">
-            <span class="nav-icon">☕</span><span>МЕНЮ</span>
-        </div>
-        <div class="nav-item" onclick="changeCat('food')">
-            <span class="nav-icon">🥐</span><span>ЕДА</span>
-        </div>
-        <div class="nav-item" onclick="tg.showAlert('Бонусы: 500 Б')">
-            <span class="nav-icon">⭐</span><span>БОНУСЫ</span>
-        </div>
-    </nav>
 
     <div class="overlay" id="overlay" onclick="closeAll()"></div>
-    <div class="sheet" id="cart-sheet">
-        <h2 style="margin-top:0">Ваш поднос</h2>
-        <div id="cart-items"></div>
-        <div style="margin-top:20px; border-top:1px solid #3d342f; padding-top:15px;">
-            <div style="display:flex; justify-content:space-between; font-size:20px; font-weight:800;">
-                <span>Итого</span>
-                <span id="total-val">0</span><span>₽</span>
-            </div>
+    
+    <div id="item-sheet" class="sheet">
+        <div class="drag-handle"></div>
+        <div class="image-box" id="image-box">
+            <img id="item-img" src="" alt="">
+            <canvas id="steamCanvas"></canvas>
         </div>
-        <button class="btn-order" onclick="sendOrder()">Оплатить и забрать</button>
+
+        <div class="sheet-content">
+            <h2 id="item-title">Название</h2>
+            
+            <div class="control-card">
+                <div class="control-header">
+                    <span>Холодный ❄️</span>
+                    <b id="temp-label">80°C</b>
+                    <span>Горячий 🔥</span>
+                </div>
+                <input type="range" id="temp-input" min="0" max="100" value="80">
+            </div>
+
+            <div class="size-row">
+                <div class="size-chip active" onclick="setSize(this)">Стандарт</div>
+                <div class="size-chip" onclick="setSize(this)">Большой</div>
+            </div>
+
+            <button class="add-to-cart-btn" onclick="buy(event)">
+                ДОБАВИТЬ В КОРЗИНУ — <span id="item-price">0</span>₽
+            </button>
+        </div>
     </div>
 
     <script>
-        let tg = window.Telegram.WebApp;
+        const tg = window.Telegram.WebApp;
         tg.expand();
 
-        const menu = {
-            coffee: [
-                { id: 1, name: "Капучино", price: 220, size: "300мл", img: "https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=400" },
-                { id: 2, name: "Латте Халва", price: 280, size: "400мл", img: "https://images.unsplash.com/photo-1599398054066-846f28917f38?w=400" },
-                { id: 3, name: "Раф Кокос", price: 310, size: "350мл", img: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=400" }
-            ],
-            food: [
-                { id: 4, name: "Круассан", price: 160, size: "Классика", img: "https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=400" },
-                { id: 5, name: "Сэндвич", price: 290, size: "С тунцом", img: "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=400" }
-            ]
-        };
+        const products = [
+            {id: 1, name: "Капучино Маршмэллоу", price: 340, img: "https://images.unsplash.com/photo-1534778101976-62847782c213?w=500"},
+            {id: 2, name: "Латте Соленая Карамель", price: 390, img: "https://images.unsplash.com/photo-1541167760496-1628856ab772?w=500"},
+            {id: 3, name: "Раф Цитрус", price: 410, img: "https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=500"}
+        ];
 
-        let cart = [];
+        let cartCount = 0;
+        const mainCanvas = document.getElementById('mainCanvas');
+        const mctx = mainCanvas.getContext('2d');
+        const steamCanvas = document.getElementById('steamCanvas');
+        const sctx = steamCanvas.getContext('2d');
+        
+        let particles = [];
+        let steamParticles = [];
+        let isSheet = false;
 
-        function render(cat) {
-            const grid = document.getElementById('menu-grid');
-            grid.innerHTML = menu[cat].map(item => `
-                <div class="product-card" onclick="addToCart(${item.id}, '${cat}')">
-                    <img src="${item.img}" class="product-img">
-                    <div style="font-weight:700; font-size:15px;">${item.name}</div>
-                    <div style="color:var(--gray); font-size:12px; margin-bottom:8px;">${item.size}</div>
-                    <span class="price-badge">${item.price}₽</span>
+        function resize() {
+            mainCanvas.width = window.innerWidth;
+            mainCanvas.height = window.innerHeight;
+            steamCanvas.width = steamCanvas.parentElement.clientWidth;
+            steamCanvas.height = steamCanvas.parentElement.clientHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Snowflake {
+            constructor() {
+                this.reset();
+                this.y = Math.random() * mainCanvas.height;
+            }
+            reset() {
+                this.x = Math.random() * mainCanvas.width;
+                this.y = -20;
+                this.size = Math.random() * 4 + 2;
+                this.speed = Math.random() * 1 + 0.5;
+                this.velX = Math.random() * 1 - 0.5;
+                this.rotation = Math.random() * Math.PI * 2;
+                this.rotSpeed = Math.random() * 0.02 - 0.01;
+            }
+            update() {
+                this.y += this.speed;
+                this.x += this.velX;
+                this.rotation += this.rotSpeed;
+                if (this.y > mainCanvas.height) this.reset();
+            }
+            draw() {
+                mctx.save();
+                mctx.translate(this.x, this.y);
+                mctx.rotate(this.rotation);
+                mctx.strokeStyle = 'rgba(255,255,255,0.7)';
+                mctx.lineWidth = 1;
+                for(let i=0; i<6; i++) {
+                    mctx.rotate(Math.PI/3);
+                    mctx.beginPath();
+                    mctx.moveTo(0,0);
+                    mctx.lineTo(0, this.size);
+                    mctx.stroke();
+                }
+                mctx.restore();
+            }
+        }
+
+        class Steam {
+            constructor(w, h) {
+                this.w = w; this.h = h;
+                this.reset();
+            }
+            reset() {
+                this.x = Math.random() * this.w;
+                this.y = this.h + 20;
+                this.life = 1.0;
+                this.size = Math.random() * 20 + 15;
+                this.vx = Math.random() * 0.6 - 0.3;
+                this.vy = Math.random() * -1.2 - 0.8;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life -= 0.007;
+                if(this.life <= 0) this.reset();
+            }
+            draw() {
+                sctx.beginPath();
+                let grad = sctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size);
+                grad.addColorStop(0, `rgba(255,255,255,${this.life * 0.25})`);
+                grad.addColorStop(1, 'rgba(255,255,255,0)');
+                sctx.fillStyle = grad;
+                sctx.arc(this.x, this.y, this.size * 1.5, 0, Math.PI*2);
+                sctx.fill();
+            }
+        }
+
+        const snowflakes = Array.from({length: 40}, () => new Snowflake());
+
+        function loop() {
+            mctx.clearRect(0,0, mainCanvas.width, mainCanvas.height);
+            snowflakes.forEach(s => { s.update(); s.draw(); });
+
+            if(isSheet) {
+                sctx.clearRect(0,0, steamCanvas.width, steamCanvas.height);
+                const t = document.getElementById('temp-input').value;
+                if(t > 40) {
+                    if(steamParticles.length < t/2) steamParticles.push(new Steam(steamCanvas.width, steamCanvas.height));
+                    steamParticles.forEach(p => { p.update(); p.draw(); });
+                } else {
+                    steamParticles = [];
+                }
+            }
+            requestAnimationFrame(loop);
+        }
+        loop();
+
+        function render() {
+            document.getElementById('menu-grid').innerHTML = products.map(p => `
+                <div class="product-card" onclick="openItem(${p.id})">
+                    <img src="${p.img}">
+                    <div class="info">
+                        <h3>${p.name}</h3>
+                        <p>${p.price} ₽</p>
+                    </div>
                 </div>
             `).join('');
         }
 
-        function changeCat(cat) {
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-            render(cat);
+        function openItem(id) {
+            const p = products.find(x => x.id === id);
+            document.getElementById('item-img').src = p.img;
+            document.getElementById('item-title').innerText = p.name;
+            document.getElementById('item-price').innerText = p.price;
+            document.getElementById('item-sheet').classList.add('active');
+            document.getElementById('overlay').classList.add('active');
+            isSheet = true;
+            resize(); 
             tg.HapticFeedback.impactOccurred('medium');
         }
 
-        function addToCart(id, cat) {
-            const item = menu[cat].find(i => i.id === id);
-            cart.push(item);
-            updateUI();
-            tg.HapticFeedback.notificationOccurred('success');
-        }
-
-        function updateUI() {
-            const total = cart.reduce((s, i) => s + i.price, 0);
-            document.getElementById('cart-count').innerText = cart.length;
-            document.getElementById('cart-total').innerText = total;
-            document.getElementById('total-val').innerText = total;
-            document.getElementById('mini-cart').style.display = cart.length > 0 ? 'block' : 'none';
-        }
-
-        function openCart() {
-            const list = document.getElementById('cart-items');
-            list.innerHTML = cart.map((i, idx) => `
-                <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid rgba(255,255,255,0.05);">
-                    <div>
-                        <b>${i.name}</b><br>
-                        <small style="color:var(--gray)">${i.size}</small>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:15px;">
-                        <b>${i.price}₽</b>
-                        <span onclick="removeFromCart(${idx})" style="color:var(--accent); font-size:20px;">✕</span>
-                    </div>
-                </div>
-            `).join('');
-            document.getElementById('cart-sheet').classList.add('active');
-            document.getElementById('overlay').style.display = 'block';
-        }
-
-        function removeFromCart(idx) {
-            cart.splice(idx, 1);
-            updateUI();
-            openCart();
-            if(cart.length === 0) closeAll();
-        }
-
         function closeAll() {
-            document.getElementById('cart-sheet').classList.remove('active');
-            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('item-sheet').classList.remove('active');
+            document.getElementById('overlay').classList.remove('active');
+            isSheet = false;
         }
 
-        function sendOrder() {
-            tg.sendData(JSON.stringify({order: cart}));
+        document.getElementById('temp-input').oninput = function() {
+            document.getElementById('temp-label').innerText = this.value + '°C';
+            tg.HapticFeedback.selectionChanged();
         }
 
-        // Инициализация данных пользователя
-        if(tg.initDataUnsafe?.user) {
-            const user = tg.initDataUnsafe.user;
-            if(user.photo_url) document.getElementById('user-avatar').src = user.photo_url;
+        function buy(e) {
+            cartCount++;
+            document.getElementById('cart-count').innerText = cartCount;
+            tg.HapticFeedback.notificationOccurred('success');
+            setTimeout(closeAll, 300);
         }
 
-        render('coffee');
+        render();
     </script>
 </body>
 </html>

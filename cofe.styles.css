@@ -1,0 +1,90 @@
+:root {
+    --bg: #090807;
+    --card: #151311;
+    --accent: #d4a373;
+    --text: #fefefe;
+}
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Montserrat', sans-serif;
+    margin: 0; overflow-x: hidden;
+}
+
+#mainCanvas { position: fixed; inset: 0; pointer-events: none; z-index: 10; }
+
+.header {
+    padding: 60px 20px 20px;
+    display: flex; justify-content: space-between; align-items: center;
+    position: relative; z-index: 20;
+}
+
+.logo-island {
+    background: #1c1a18; padding: 10px 22px; border-radius: 50px;
+    font-weight: 900; border: 1px solid #2d2a27; font-size: 14px;
+}
+.logo-island span { color: var(--accent); }
+
+.cart-btn {
+    background: var(--accent); color: #000;
+    padding: 10px 18px; border-radius: 20px; font-weight: 900;
+    display: flex; align-items: center; gap: 8px;
+}
+
+.container { padding: 0 20px; position: relative; z-index: 20; }
+.welcome h1 { font-size: 34px; line-height: 1.1; margin-bottom: 30px; }
+.welcome span { color: var(--accent); }
+
+.menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding-bottom: 100px; }
+
+.product-card {
+    background: var(--card); border-radius: 30px; overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.03);
+}
+.product-card img { width: 100%; aspect-ratio: 1/1; object-fit: cover; }
+.info { padding: 15px; }
+.info h3 { margin: 0; font-size: 14px; opacity: 0.9; }
+.info p { color: var(--accent); font-weight: 800; margin: 5px 0 0; }
+
+/* Шторка */
+.sheet {
+    position: fixed; bottom: -110%; left: 0; right: 0;
+    background: #11100f; border-radius: 40px 40px 0 0;
+    padding: 25px; z-index: 2000; transition: 0.6s cubic-bezier(0.2, 1, 0.2, 1);
+}
+.sheet.active { bottom: 0; }
+
+.image-box {
+    width: 100%; height: 260px; border-radius: 30px; 
+    position: relative; overflow: hidden; background: #000;
+}
+.image-box img { width: 100%; height: 100%; object-fit: cover; opacity: 0.7; }
+
+/* Холст для пара поверх картинки */
+#steamCanvas {
+    position: absolute; inset: 0;
+    z-index: 5; pointer-events: none;
+}
+
+.control-card { background: #1a1816; padding: 20px; border-radius: 25px; margin: 20px 0; }
+.control-header { display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; margin-bottom: 15px; }
+#temp-label { color: var(--accent); font-size: 14px; }
+
+input[type=range] { width: 100%; accent-color: var(--accent); }
+
+.size-row { display: flex; gap: 10px; margin-bottom: 25px; }
+.size-chip { flex: 1; padding: 16px; background: #221f1d; border-radius: 18px; text-align: center; font-weight: 700; }
+.size-chip.active { border: 1px solid var(--accent); color: var(--accent); background: rgba(212, 163, 115, 0.1); }
+
+.add-to-cart-btn {
+    width: 100%; padding: 22px; border: none; border-radius: 25px;
+    background: var(--accent); color: #000; font-weight: 900; font-size: 16px;
+    box-shadow: 0 10px 40px rgba(212, 163, 115, 0.2);
+}
+
+.overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(15px); opacity: 0; visibility: hidden; transition: 0.3s; z-index: 1500;
+}
+.overlay.active { opacity: 1; visibility: visible; }
