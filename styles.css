@@ -944,3 +944,14 @@ body[data-theme="dark"] input:not(:checked) + .slider:before {
         opacity: 1
     }
 }
+.admin-wrapper input {
+    padding: 8px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+}
+
+.admin-wrapper input:focus {
+    border-color: var(--accent) !important;
+}

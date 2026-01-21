@@ -583,6 +583,82 @@
       const h = new Hammer(sh);
       h.on('swipedown', closeAll);
     });
+    // Проверка режима админа при загрузке
+const urlParams = new URLSearchParams(window.location.search);
+const isAdminMode = urlParams.get('mode') === 'admin';
+
+if (isAdminMode) {
+    document.body.classList.add('admin-active');
+    renderAdminPanel();
+}
+
+function renderAdminPanel() {
+    // Скрываем обычную витрину, показываем редактор
+    const container = document.querySelector('.container') || document.body;
+    container.innerHTML = `
+        <div class="admin-wrapper" style="padding: 20px; padding-top: 80px;">
+            <h1 style="color: var(--accent); margin-bottom: 20px;">⚙️ Админ-панель</h1>
+            <div id="admin-items-list"></div>
+            <button class="order-btn" onclick="saveAllChanges()" style="margin-top:20px;">Сохранить изменения</button>
+            <button class="order-btn" onclick="window.location.reload()" style="background:gray; margin-top:10px;">Выйти</button>
+        </div>
+    `;
+
+    const list = document.getElementById('admin-items-list');
+    
+    // Перебираем товары из твоего массива menu
+    menu.forEach((item, index) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'cart-item'; // используем твои стили
+        itemDiv.innerHTML = `
+            <div style="flex:1">
+                <input type="text" value="${item.name}" id="name-${index}" style="width:100%; background:none; color:white; border:1px solid #333; margin-bottom:5px;">
+                <input type="number" value="${item.price}" id="price-${index}" style="width:60px; background:none; color:var(--accent-light); border:1px solid #333;"> ₽
+            </div>
+        `;
+        list.appendChild(itemDiv);
+    });
+}
+
+function saveAllChanges() {
+    menu.forEach((item, index) => {
+        item.name = document.getElementById(`name-${index}`).value;
+        item.price = parseInt(document.getElementById(`price-${index}`).value);
+    });
+    
+    // Отправляем обновленное меню боту, чтобы он мог сохранить его в БД или файл
+    if (window.tg) {
+        tg.sendData(JSON.stringify({
+            action: 'update_menu',
+            new_menu: menu
+        }));
+    }
+    alert("Настройки отправлены боту!");
+}
+    function sendOrder() {
+    if (cart.length === 0) {
+        tg.showAlert("Ваша корзина пуста!");
+        return;
+    }
+
+    const address = document.getElementById('address').value;
+    if (!address) {
+        tg.showAlert("Пожалуйста, укажите адрес доставки.");
+        return;
+    }
+
+    // Собираем данные для бота
+    const data = {
+        items: cart,
+        total: document.getElementById('total-val').innerText.replace('₽', ''),
+        address: address,
+        payMethod: payMethod,
+        phone: userData.phone
+    };
+
+    // Отправляем данные боту (закроет Mini App автоматически)
+    tg.sendData(json.stringify(data));
+}
 
 
     initHeroSlider();
