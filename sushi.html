@@ -583,41 +583,97 @@
       const h = new Hammer(sh);
       h.on('swipedown', closeAll);
     });
-    // Проверка режима админа при загрузке
+
+// Проверка режима админа
 const urlParams = new URLSearchParams(window.location.search);
 const isAdminMode = urlParams.get('mode') === 'admin';
 
 if (isAdminMode) {
     document.body.classList.add('admin-active');
-    renderAdminPanel();
+    setTimeout(renderAdminPanel, 100); // небольшая задержка для загрузки menu
 }
 
 function renderAdminPanel() {
-    // Скрываем обычную витрину, показываем редактор
     const container = document.querySelector('.container') || document.body;
     container.innerHTML = `
-        <div class="admin-wrapper" style="padding: 20px; padding-top: 80px;">
-            <h1 style="color: var(--accent); margin-bottom: 20px;">⚙️ Админ-панель</h1>
+        <div class="admin-wrapper" style="padding: 20px; padding-top: 80px; color: var(--text);">
+            <h1 style="color: var(--accent); margin-bottom: 20px;">⚙️ Управление меню</h1>
+            
+            <div style="background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 25px; border: 1px solid var(--border);">
+                <h3 style="margin-top:0">➕ Добавить товар</h3>
+                <input type="text" id="new-name" placeholder="Название" style="width:100%; margin-bottom:10px;">
+                <input type="text" id="new-desc" placeholder="Описание" style="width:100%; margin-bottom:10px;">
+                <input type="number" id="new-price" placeholder="Цена" style="width:100%; margin-bottom:10px;">
+                <input type="text" id="new-img" placeholder="URL картинки" style="width:100%; margin-bottom:10px;">
+                <button class="order-btn" onclick="addNewItem()">Добавить в список</button>
+            </div>
+
             <div id="admin-items-list"></div>
-            <button class="order-btn" onclick="saveAllChanges()" style="margin-top:20px;">Сохранить изменения</button>
-            <button class="order-btn" onclick="window.location.reload()" style="background:gray; margin-top:10px;">Выйти</button>
+            
+            <button class="order-btn" onclick="saveAllChanges()" style="margin-top:30px; position: sticky; bottom: 20px; box-shadow: 0 -5px 20px rgba(0,0,0,0.5);">💾 СОХРАНИТЬ ВСЁ</button>
         </div>
     `;
+    refreshAdminList();
+}
 
+function refreshAdminList() {
     const list = document.getElementById('admin-items-list');
+    list.innerHTML = '<h3>Текущие товары:</h3>';
     
-    // Перебираем товары из твоего массива menu
     menu.forEach((item, index) => {
         const itemDiv = document.createElement('div');
-        itemDiv.className = 'cart-item'; // используем твои стили
+        itemDiv.style = "background: var(--card); padding: 10px; border-radius: 12px; margin-bottom: 10px; border-left: 4px solid var(--accent); position: relative;";
         itemDiv.innerHTML = `
-            <div style="flex:1">
-                <input type="text" value="${item.name}" id="name-${index}" style="width:100%; background:none; color:white; border:1px solid #333; margin-bottom:5px;">
-                <input type="number" value="${item.price}" id="price-${index}" style="width:60px; background:none; color:var(--accent-light); border:1px solid #333;"> ₽
+            <button onclick="deleteItem(${index})" style="position:absolute; right:10px; top:10px; background:none; border:none; color:var(--accent); font-weight:bold;">❌</button>
+            <input type="text" value="${item.name}" onchange="updateItem(${index}, 'name', this.value)" style="width:80%; font-weight:bold; background:none; border:none; color:var(--text);">
+            <textarea onchange="updateItem(${index}, 'desc', this.value)" style="width:100%; background:none; border:none; color:var(--text-gray); font-size:12px; margin: 5px 0;">${item.desc || ''}</textarea>
+            <div style="display:flex; align-items:center;">
+                <input type="number" value="${item.price}" onchange="updateItem(${index}, 'price', this.value)" style="width:70px; background:none; border:1px solid var(--border); color:var(--accent-light);"> ₽
             </div>
         `;
         list.appendChild(itemDiv);
     });
+}
+
+function updateItem(index, field, value) {
+    menu[index][field] = field === 'price' ? parseInt(value) : value;
+}
+
+function deleteItem(index) {
+    if(confirm("Удалить этот товар?")) {
+        menu.splice(index, 1);
+        refreshAdminList();
+    }
+}
+
+function addNewItem() {
+    const name = document.getElementById('new-name').value;
+    const price = parseInt(document.getElementById('new-price').value);
+    const desc = document.getElementById('new-desc').value;
+    const img = document.getElementById('new-img').value || 'img/default.jpg';
+
+    if(!name || !price) return alert("Заполни хотя бы имя и цену!");
+
+    menu.unshift({ name, price, desc, img, cat: 'new' });
+    refreshAdminList();
+    
+    // Очистка полей
+    document.getElementById('new-name').value = '';
+    document.getElementById('new-price').value = '';
+    document.getElementById('new-desc').value = '';
+}
+
+function saveAllChanges() {
+    if (window.tg) {
+        tg.showConfirm("Вы уверены, что хотите обновить меню?", (ok) => {
+            if(ok) {
+                tg.sendData(JSON.stringify({
+                    action: 'update_menu',
+                    new_menu: menu
+                }));
+            }
+        });
+    }
 }
 
 function saveAllChanges() {

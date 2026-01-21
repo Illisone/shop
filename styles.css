@@ -955,3 +955,15 @@ body[data-theme="dark"] input:not(:checked) + .slider:before {
 .admin-wrapper input:focus {
     border-color: var(--accent) !important;
 }
+.admin-wrapper input, .admin-wrapper textarea {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px;
+    color: var(--text);
+    font-family: inherit;
+}
+
+body[data-theme="light"] .admin-wrapper input {
+    background: #fff;
+}
