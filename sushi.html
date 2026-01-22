@@ -364,7 +364,11 @@ function focusField(el) {
 
 function updateCartUI() {
   /* 0. ПЕРЕРИСОВЫВАЕМ ВИДИМУЮ СЕТКУ (динамика счётчиков) */
-  render(); // ← добавь это в самый верх функции
+  render();
+
+  /* === МИНИ-КОРЗИНА: сумма и количество === */
+  const subMini = cart.reduce((s, i) => s + i.price * (i.qty || 1), 0);
+  document.getElementById('mini-sum').innerText = subMini + '₽'; // ← ВОТ ЭТО БЫЛО УДАЛЕНО
 
   /* 1. СЕТКА ДОПОВ – убрал иконку и цену */
   const extrasGrid = document.getElementById('extras-grid');
@@ -398,7 +402,8 @@ function updateCartUI() {
     list.innerHTML = cart.map(i => `
   <div class="cart-item">
     <div class="cart-info">
-      <b>${i.name}</b><br>
+      <b>${i.name}</b>
+      ${!i.isExtra ? `<br><small>${i.price}₽</small>` : ''}
     </div>
     <div class="cart-controls">
       <button class="cart-btn" onclick="changeQty('${i.id}', -1)">−</button>
@@ -456,10 +461,15 @@ function updateCartUI() {
     function setPay(m, el) { payMethod = m; document.querySelectorAll('.pay-opt').forEach(o => o.classList.remove('active')); el.classList.add('active'); }
 
     function closeAll() {
-      document.querySelectorAll('.sheet').forEach(s => s.classList.remove('active'));
-      document.getElementById('overlay').classList.remove('active');
-      document.body.classList.remove('no-scroll');
-    }
+  document.querySelectorAll('.sheet').forEach(s => s.classList.remove('active'));
+  document.getElementById('overlay').classList.remove('active');
+  document.body.classList.remove('no-scroll');
+
+  // ждём 400 мс (время transition) и только потом скроллим
+  setTimeout(() => {
+    window.scrollTo({ top: scrollBeforeDetail, behavior: 'smooth' });
+  }, 400);
+}
 
     function openSheet(id) {
       document.getElementById(id).classList.add('active');
@@ -601,10 +611,10 @@ function updateCartUI() {
     })();
     /* ----------  ПЛАВАЮЩАЯ КОРЗИНА  ---------- */
     function showMiniCart() {
-      const mc = document.getElementById('mini-cart');
-      mc.style.display = 'flex';
-      mc.animate([{ transform: 'scale(0.8)', opacity: 0 }, { transform: 'scale(1)', opacity: 1 }], { duration: 200, fill: 'forwards' });
-    }
+  const mc = document.getElementById('mini-cart');
+  mc.style.display = 'flex';
+  mc.animate([{ transform: 'scale(0.8)', opacity: 0 }, { transform: 'scale(1)', opacity: 1 }], { duration: 200, fill: 'forwards' });
+}
     function hideMiniCart() {
       document.getElementById('mini-cart').style.display = 'none';
     }
