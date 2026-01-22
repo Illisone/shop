@@ -351,7 +351,7 @@
       const extrasGrid = document.getElementById('extras-grid');
       extrasGrid.innerHTML = extras.map(e => `
     <div class="extra-card" onclick="addExtraWithAnim('${e.id}', event)">
-        <div class="extra-name">${e.name}</div>
+        ${e.name}
     </div>`).join('');
 
       /* 2. СЧИТАЕМ ИТОГО */
