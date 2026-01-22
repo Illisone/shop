@@ -103,7 +103,7 @@
       </div>
       <div class="delivery-free" id="delivery-free"></div>
 
-      <input type="text" id="address" class="input-style" placeholder="Адрес доставки">
+      <input type="text" id="address" class="input-style" placeholder="Адрес доставки" onfocus="focusField(this)">
     </div>
     <button class="btn-main" onclick="sendOrder()">Оформить заказ</button>
   </div>
@@ -206,6 +206,19 @@
         slides[heroIndex].classList.add('active');
       }, 3000);
     }
+    let scrollBeforeDetail = 0; // куда скроллили до открытия деталей
+
+function showDetails(id) {
+  scrollBeforeDetail = window.pageYOffset; // запомнили
+  const item = menu[currentTab].find(p => p.id === id) || Object.values(menu).flat().find(p => p.id === id);
+  curProd = item;
+  document.getElementById('d-img').src = item.img;
+  document.getElementById('d-title').innerText = item.name;
+  document.getElementById('d-meta').innerText = item.meta;
+  document.getElementById('d-desc').innerText = item.desc;
+  openSheet('details-sheet');
+  triggerHaptic('medium');
+}
     function triggerHaptic(type = 'light') {
       // Если настройки говорят "выключено" — ничего не делаем
       if (typeof settings !== 'undefined' && !settings.hapticEnabled) return;
@@ -223,20 +236,20 @@
     function switchTab(tab) {
       currentTab = tab;
 
-      // 1. Убираем подсветку со всех кнопок и даем её нажатой
+      // 1. Убираем подсветку со всех кнопок и даём её нажатой
       document.querySelectorAll('.bottom-tab').forEach(t => t.classList.remove('active'));
       if (event && event.currentTarget) event.currentTarget.classList.add('active');
 
-      // 2. ВМЕСТО КУЧИ СТРОК С IF — ОДНА КОМАНДА:
+      // 2. Вибро-отклик
       triggerHaptic('light');
 
-      // 3. Перерисовываем экран
+      // 3. Перерисовываем экран (с актуальными счётчиками)
       render();
     }
 
     function render() {
-  const items = menu[currentTab] || [];
-  document.getElementById('grid').innerHTML = items.map((p, i) => `
+      const items = menu[currentTab] || [];
+      document.getElementById('grid').innerHTML = items.map((p, i) => `
     <div class="item" style="animation-delay:${i * 0.1}s" onclick="showDetails(${p.id})">
       ${p.tag ? `<div class="badge"><span class="badge-icon">${p.tagIcon}</span><span>${p.tag}</span></div>` : ''}
       ${getQtyInCart(p.id) > 0 ? `<div class="cart-badge">${getQtyInCart(p.id)}</div>` : ''}
@@ -247,7 +260,7 @@
         <span class="p-val">${p.price}₽</span>
       </div>
     </div>`).join('');
-}
+    }
 
     function showDetails(id) {
       const item = menu[currentTab].find(p => p.id === id) || Object.values(menu).flat().find(p => p.id === id);
@@ -341,43 +354,48 @@
       updateCartUI();
     }
 
+// ставим фокус и плавно скроллим к полю, чтобы курсор был виден
+function focusField(el) {
+  el.focus();
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  // поднимаем ещё выше, чтобы клавиатура не закрывала поле
+  setTimeout(() => window.scrollBy(0, 120), 300);
+}
 
+function updateCartUI() {
+  /* 0. ПЕРЕРИСОВЫВАЕМ ВИДИМУЮ СЕТКУ (динамика счётчиков) */
+  render(); // ← добавь это в самый верх функции
 
-    function updateCartUI() {
-      const c = cart.reduce((s, i) => s + (i.qty || 1), 0);
-      const subMini = cart.reduce((s, i) => s + i.price * (i.qty || 1), 0);
-      document.getElementById('mini-sum').innerText = subMini + '₽';
-
-      /* 1. СЕТКА ДОПОВ – убрал иконку и цену */
-      const extrasGrid = document.getElementById('extras-grid');
-      extrasGrid.innerHTML = extras.map(e => `
+  /* 1. СЕТКА ДОПОВ – убрал иконку и цену */
+  const extrasGrid = document.getElementById('extras-grid');
+  extrasGrid.innerHTML = extras.map(e => `
     <div class="extra-card" onclick="addExtraWithAnim('${e.id}', event)">
         ${e.name}
     </div>`).join('');
 
-      /* 2. СЧИТАЕМ ИТОГО */
-      let subtotal = cart.reduce((s, i) => s + i.price * (i.qty || 1), 0);
-      const freeDeliveryThreshold = 900;
-      let delivery = 0;
-      if (!promoApplied && subtotal < freeDeliveryThreshold) delivery = 150;
-      const total = subtotal + delivery;
-      document.getElementById('total-val').innerText = total + '₽';
+  /* 2. СЧИТАЕМ ИТОГО */
+  let subtotal = cart.reduce((s, i) => s + i.price * (i.qty || 1), 0);
+  const freeDeliveryThreshold = 900;
+  let delivery = 0;
+  if (!promoApplied && subtotal < freeDeliveryThreshold) delivery = 150;
+  const total = subtotal + delivery;
+  document.getElementById('total-val').innerText = total + '₽';
 
-      const freeEl = document.getElementById('delivery-free');
-      freeEl.innerText = delivery === 0
-        ? 'Бесплатная доставка'
-        : `Доставка 150₽ (бесплатно от ${freeDeliveryThreshold}₽)`;
+  const freeEl = document.getElementById('delivery-free');
+  freeEl.innerText = delivery === 0
+    ? 'Бесплатная доставка'
+    : `Доставка 150₽ (бесплатно от ${freeDeliveryThreshold}₽)`;
 
-      document.getElementById('address').value = userData.address;
+  document.getElementById('address').value = userData.address;
 
-      /* 3. СПИСОК ТОВАРОВ В КОРЗИНЕ – убрал иконку у extra */
-      const list = document.getElementById('cart-items');
-      if (cart.length === 0) {
-        document.getElementById('cart-empty').style.display = 'block';
-        list.innerHTML = '';
-      } else {
-        document.getElementById('cart-empty').style.display = 'none';
-        list.innerHTML = cart.map(i => `
+  /* 3. СПИСОК ТОВАРОВ В КОРЗИНЕ – убрал иконку у extra */
+  const list = document.getElementById('cart-items');
+  if (cart.length === 0) {
+    document.getElementById('cart-empty').style.display = 'block';
+    list.innerHTML = '';
+  } else {
+    document.getElementById('cart-empty').style.display = 'none';
+    list.innerHTML = cart.map(i => `
   <div class="cart-item">
     <div class="cart-info">
       <b>${i.name}</b><br>
@@ -390,8 +408,8 @@
     <span class="cart-price">${i.price * (i.qty || 1)}₽</span>
     <span class="cart-remove" onclick="removeItem('${i.id}')">Удалить</span>
   </div>`).join('');
-      }
-    }
+  }
+}
 
 
 
@@ -502,9 +520,9 @@
       renderFiltered(filtered.length ? filtered : all);
     }
     function getQtyInCart(id) {
-  const item = cart.find(x => x.id == id && !x.isExtra);
-  return item ? (item.qty || 1) : 0;
-}
+      const item = cart.find(x => x.id == id && !x.isExtra);
+      return item ? (item.qty || 1) : 0;
+    }
     function renderFiltered(list) {
       document.getElementById('grid').innerHTML = list.map((p, i) => `
     <div class="item" style="animation-delay:${i * 0.1}s" onclick="showDetails(${p.id})">
@@ -597,32 +615,32 @@
       h.on('swipedown', closeAll);
     });
     function tryAutoAddress() {
-  if (!navigator.geolocation) return;
-  if (localStorage.getItem('auto-address-used')) return;
+      if (!navigator.geolocation) return;
+      if (localStorage.getItem('auto-address-used')) return;
 
-  navigator.geolocation.getCurrentPosition(
-    async (pos) => {
-      const { latitude, longitude } = pos.coords;
-      try {
-        const res = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`
-        );
-        const data = await res.json();
-        const addr = data.display_name || '';
-        if (addr) {
-          userData.address = addr;
-          document.getElementById('address').value = addr;
-          document.getElementById('profile-address').value = addr;
-          localStorage.setItem('auto-address-used', '1');
-        }
-      } catch (e) {
-        console.warn('Geo error', e);
-      }
-    },
-    (err) => console.warn('Geo fail', err),
-    { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }
-  );
-}
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          const { latitude, longitude } = pos.coords;
+          try {
+            const res = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`
+            );
+            const data = await res.json();
+            const addr = data.display_name || '';
+            if (addr) {
+              userData.address = addr;
+              document.getElementById('address').value = addr;
+              document.getElementById('profile-address').value = addr;
+              localStorage.setItem('auto-address-used', '1');
+            }
+          } catch (e) {
+            console.warn('Geo error', e);
+          }
+        },
+        (err) => console.warn('Geo fail', err),
+        { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }
+      );
+    }
     function sendOrder() {
       if (cart.length === 0) {
         tg.showAlert("Ваша корзина пуста!");
