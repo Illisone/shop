@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 
-<body>
+<body data-theme="dark">
   <div id="slash-container" class="slash-container"></div>
   <!-- ЛОГО в островке + поиск-островок + аватар -->
   <div class="top-line">
@@ -538,6 +538,12 @@
         const myHaptic = document.getElementById('haptic-toggle');
 
         if (myTheme) {
+          // ★ тёмная тема по умолчанию, если пользователь ещё ничего не выбирал
+          if (!localStorage.getItem('yakuza-theme')) {
+            localStorage.setItem('yakuza-theme', 'dark');
+            document.body.dataset.theme = 'dark';
+          }
+
           myTheme.checked = document.body.dataset.theme === 'dark';
           myTheme.onchange = function () {
             const isDark = myTheme.checked;
@@ -561,7 +567,8 @@
           };
         }
       }
-      // Запуск после загрузки
+
+      // запуск
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initApp);
       } else {
