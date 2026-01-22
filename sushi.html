@@ -278,35 +278,35 @@
     }
 
     function removeItem(id) {
-  const btn = event.target;
-  const itemElement = btn.closest('.cart-item');
+      const btn = event.target;
+      const itemElement = btn.closest('.cart-item');
 
-  if (itemElement && !itemElement.classList.contains('cart-item-dissolve')) {
-    // 1. Фиксируем высоту для плавной анимации
-    itemElement.style.maxHeight = itemElement.offsetHeight + 'px';
-    itemElement.offsetHeight; // force reflow
+      if (itemElement && !itemElement.classList.contains('cart-item-dissolve')) {
+        // 1. Фиксируем высоту для плавной анимации
+        itemElement.style.maxHeight = itemElement.offsetHeight + 'px';
+        itemElement.offsetHeight; // force reflow
 
-    // 2. Запускаем эффект растворения
-    itemElement.classList.add('cart-item-dissolve');
-    
-    // ПРАВИЛЬНО: используем нашу функцию-фильтр
-    triggerHaptic('medium');
+        // 2. Запускаем эффект растворения
+        itemElement.classList.add('cart-item-dissolve');
 
-    setTimeout(() => {
-      // Удаляем товар из массива (подходит и для ID-чисел, и для ID-строк)
-      cart = cart.filter(x => x.id != id);
+        // ПРАВИЛЬНО: используем нашу функцию-фильтр
+        triggerHaptic('medium');
 
-      updateCartUI();
+        setTimeout(() => {
+          // Удаляем товар из массива (подходит и для ID-чисел, и для ID-строк)
+          cart = cart.filter(x => x.id != id);
 
-      if (cart.length === 0) {
-        hideMiniCart();
+          updateCartUI();
+
+          if (cart.length === 0) {
+            hideMiniCart();
+          }
+
+          // ПРАВИЛЬНО: уведомление об успехе через фильтр
+          triggerHaptic('success');
+        }, 450);
       }
-
-      // ПРАВИЛЬНО: уведомление об успехе через фильтр
-      triggerHaptic('success');
-    }, 450);
-  }
-}
+    }
 
 
     function addExtra(id) {
@@ -340,50 +340,46 @@
       updateCartUI();
     }
 
+
+
     function updateCartUI() {
       const c = cart.reduce((s, i) => s + (i.qty || 1), 0);
-      // Сумма в мини-корзине (только основные товары или всё вместе — на ваш выбор)
       const subMini = cart.reduce((s, i) => s + i.price * (i.qty || 1), 0);
       document.getElementById('mini-sum').innerText = subMini + '₽';
 
-      // Отрисовка сетки допов
+      /* 1. СЕТКА ДОПОВ – убрал иконку и цену */
       const extrasGrid = document.getElementById('extras-grid');
       extrasGrid.innerHTML = extras.map(e => `
-        <div class="extra-card" onclick="addExtraWithAnim('${e.id}', event)">
-            <div class="extra-icon">${e.icon}</div>
-            <div class="extra-name">${e.name}</div>
-            <div style="color:var(--accent-light);font-weight:700;margin-top:5px;">+${e.price}₽</div>
-        </div>`).join('');
+    <div class="extra-card" onclick="addExtraWithAnim('${e.id}', event)">
+        <div class="extra-name">${e.name}</div>
+    </div>`).join('');
 
-      // Расчет полной стоимости
+      /* 2. СЧИТАЕМ ИТОГО */
       let subtotal = cart.reduce((s, i) => s + i.price * (i.qty || 1), 0);
       const freeDeliveryThreshold = 900;
       let delivery = 0;
       if (!promoApplied && subtotal < freeDeliveryThreshold) delivery = 150;
-
       const total = subtotal + delivery;
       document.getElementById('total-val').innerText = total + '₽';
 
       const freeEl = document.getElementById('delivery-free');
-      if (delivery === 0) freeEl.innerText = 'Бесплатная доставка';
-      else freeEl.innerText = `Доставка 150₽ (бесплатно от ${freeDeliveryThreshold}₽)`;
+      freeEl.innerText = delivery === 0
+        ? 'Бесплатная доставка'
+        : `Доставка 150₽ (бесплатно от ${freeDeliveryThreshold}₽)`;
 
       document.getElementById('address').value = userData.address;
 
-      // Отрисовка списка товаров в корзине
+      /* 3. СПИСОК ТОВАРОВ В КОРЗИНЕ – убрал иконку у extra */
       const list = document.getElementById('cart-items');
-
       if (cart.length === 0) {
         document.getElementById('cart-empty').style.display = 'block';
         list.innerHTML = '';
       } else {
         document.getElementById('cart-empty').style.display = 'none';
-
-        // ВАЖНО: Используем весь массив cart без фильтрации !i.isExtra
         list.innerHTML = cart.map(i => `
   <div class="cart-item">
     <div class="cart-info">
-      <b>${i.isExtra ? i.icon + ' ' : ''}${i.name}</b><br>
+      <b>${i.name}</b><br>
       <small>${i.price}₽</small>
     </div>
     <div class="cart-controls">
@@ -396,6 +392,10 @@
   </div>`).join('');
       }
     }
+
+
+
+
     function addExtraWithAnim(id, event) {
       const item = extras.find(e => e.id === id);
       const card = event.currentTarget;
@@ -583,138 +583,30 @@
       const h = new Hammer(sh);
       h.on('swipedown', closeAll);
     });
-
-// Проверка режима админа
-const urlParams = new URLSearchParams(window.location.search);
-const isAdminMode = urlParams.get('mode') === 'admin';
-
-if (isAdminMode) {
-    document.body.classList.add('admin-active');
-    setTimeout(renderAdminPanel, 100); // небольшая задержка для загрузки menu
-}
-
-function renderAdminPanel() {
-    const container = document.querySelector('.container') || document.body;
-    container.innerHTML = `
-        <div class="admin-wrapper" style="padding: 20px; padding-top: 80px; color: var(--text);">
-            <h1 style="color: var(--accent); margin-bottom: 20px;">⚙️ Управление меню</h1>
-            
-            <div style="background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 25px; border: 1px solid var(--border);">
-                <h3 style="margin-top:0">➕ Добавить товар</h3>
-                <input type="text" id="new-name" placeholder="Название" style="width:100%; margin-bottom:10px;">
-                <input type="text" id="new-desc" placeholder="Описание" style="width:100%; margin-bottom:10px;">
-                <input type="number" id="new-price" placeholder="Цена" style="width:100%; margin-bottom:10px;">
-                <input type="text" id="new-img" placeholder="URL картинки" style="width:100%; margin-bottom:10px;">
-                <button class="order-btn" onclick="addNewItem()">Добавить в список</button>
-            </div>
-
-            <div id="admin-items-list"></div>
-            
-            <button class="order-btn" onclick="saveAllChanges()" style="margin-top:30px; position: sticky; bottom: 20px; box-shadow: 0 -5px 20px rgba(0,0,0,0.5);">💾 СОХРАНИТЬ ВСЁ</button>
-        </div>
-    `;
-    refreshAdminList();
-}
-
-function refreshAdminList() {
-    const list = document.getElementById('admin-items-list');
-    list.innerHTML = '<h3>Текущие товары:</h3>';
-    
-    menu.forEach((item, index) => {
-        const itemDiv = document.createElement('div');
-        itemDiv.style = "background: var(--card); padding: 10px; border-radius: 12px; margin-bottom: 10px; border-left: 4px solid var(--accent); position: relative;";
-        itemDiv.innerHTML = `
-            <button onclick="deleteItem(${index})" style="position:absolute; right:10px; top:10px; background:none; border:none; color:var(--accent); font-weight:bold;">❌</button>
-            <input type="text" value="${item.name}" onchange="updateItem(${index}, 'name', this.value)" style="width:80%; font-weight:bold; background:none; border:none; color:var(--text);">
-            <textarea onchange="updateItem(${index}, 'desc', this.value)" style="width:100%; background:none; border:none; color:var(--text-gray); font-size:12px; margin: 5px 0;">${item.desc || ''}</textarea>
-            <div style="display:flex; align-items:center;">
-                <input type="number" value="${item.price}" onchange="updateItem(${index}, 'price', this.value)" style="width:70px; background:none; border:1px solid var(--border); color:var(--accent-light);"> ₽
-            </div>
-        `;
-        list.appendChild(itemDiv);
-    });
-}
-
-function updateItem(index, field, value) {
-    menu[index][field] = field === 'price' ? parseInt(value) : value;
-}
-
-function deleteItem(index) {
-    if(confirm("Удалить этот товар?")) {
-        menu.splice(index, 1);
-        refreshAdminList();
-    }
-}
-
-function addNewItem() {
-    const name = document.getElementById('new-name').value;
-    const price = parseInt(document.getElementById('new-price').value);
-    const desc = document.getElementById('new-desc').value;
-    const img = document.getElementById('new-img').value || 'img/default.jpg';
-
-    if(!name || !price) return alert("Заполни хотя бы имя и цену!");
-
-    menu.unshift({ name, price, desc, img, cat: 'new' });
-    refreshAdminList();
-    
-    // Очистка полей
-    document.getElementById('new-name').value = '';
-    document.getElementById('new-price').value = '';
-    document.getElementById('new-desc').value = '';
-}
-
-function saveAllChanges() {
-    if (window.tg) {
-        tg.showConfirm("Вы уверены, что хотите обновить меню?", (ok) => {
-            if(ok) {
-                tg.sendData(JSON.stringify({
-                    action: 'update_menu',
-                    new_menu: menu
-                }));
-            }
-        });
-    }
-}
-
-function saveAllChanges() {
-    menu.forEach((item, index) => {
-        item.name = document.getElementById(`name-${index}`).value;
-        item.price = parseInt(document.getElementById(`price-${index}`).value);
-    });
-    
-    // Отправляем обновленное меню боту, чтобы он мог сохранить его в БД или файл
-    if (window.tg) {
-        tg.sendData(JSON.stringify({
-            action: 'update_menu',
-            new_menu: menu
-        }));
-    }
-    alert("Настройки отправлены боту!");
-}
     function sendOrder() {
-    if (cart.length === 0) {
+      if (cart.length === 0) {
         tg.showAlert("Ваша корзина пуста!");
         return;
-    }
+      }
 
-    const address = document.getElementById('address').value;
-    if (!address) {
+      const address = document.getElementById('address').value;
+      if (!address) {
         tg.showAlert("Пожалуйста, укажите адрес доставки.");
         return;
-    }
+      }
 
-    // Собираем данные для бота
-    const data = {
+      // Собираем данные для бота
+      const data = {
         items: cart,
         total: document.getElementById('total-val').innerText.replace('₽', ''),
         address: address,
         payMethod: payMethod,
         phone: userData.phone
-    };
+      };
 
-    // Отправляем данные боту (закроет Mini App автоматически)
-    tg.sendData(json.stringify(data));
-}
+      // Отправляем данные боту (закроет Mini App автоматически)
+      tg.sendData(json.stringify(data));
+    }
 
 
     initHeroSlider();
