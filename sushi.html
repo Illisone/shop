@@ -500,10 +500,15 @@
       );
       renderFiltered(filtered.length ? filtered : all);
     }
+    function getQtyInCart(id) {
+  const item = cart.find(x => x.id == id && !x.isExtra);
+  return item ? (item.qty || 1) : 0;
+}
     function renderFiltered(list) {
       document.getElementById('grid').innerHTML = list.map((p, i) => `
     <div class="item" style="animation-delay:${i * 0.1}s" onclick="showDetails(${p.id})">
       ${p.tag ? `<div class="badge"><span class="badge-icon">${p.tagIcon}</span><span>${p.tag}</span></div>` : ''}
+      ${getQtyInCart(p.id) > 0 ? `<div class="cart-badge">${getQtyInCart(p.id)}</div>` : ''}
       <img src="${p.img}" class="item-img">
       <div style="font-weight:800;font-size:15px">${p.name}</div>
       <div style="font-size:11px;color:var(--text-gray)">${p.meta}</div>
@@ -565,6 +570,7 @@
             if (val && window.tg) tg.HapticFeedback.notificationOccurred('success');
           };
         }
+        tryAutoAddress();
       }
 
       // запуск
@@ -589,6 +595,33 @@
       const h = new Hammer(sh);
       h.on('swipedown', closeAll);
     });
+    function tryAutoAddress() {
+  if (!navigator.geolocation) return;
+  if (localStorage.getItem('auto-address-used')) return;
+
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
+      const { latitude, longitude } = pos.coords;
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`
+        );
+        const data = await res.json();
+        const addr = data.display_name || '';
+        if (addr) {
+          userData.address = addr;
+          document.getElementById('address').value = addr;
+          document.getElementById('profile-address').value = addr;
+          localStorage.setItem('auto-address-used', '1');
+        }
+      } catch (e) {
+        console.warn('Geo error', e);
+      }
+    },
+    (err) => console.warn('Geo fail', err),
+    { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }
+  );
+}
     function sendOrder() {
       if (cart.length === 0) {
         tg.showAlert("Ваша корзина пуста!");
