@@ -625,23 +625,19 @@ body.no-scroll {
 }
 
 .cart-item {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
     align-items: center;
     gap: 12px;
     background: #1c1c1e;
     border-radius: 20px;
     padding: 14px;
     margin-bottom: 10px;
-    
     position: relative;
-    /* overflow: hidden; — ВАЖНО: убери или оставь, если внутри нет вылетающих элементов. 
-       Для эффекта растворения лучше оставить hidden, чтобы контент не вылезал при сжатии */
     overflow: hidden; 
-    
-    /* Добавляем max-height, чтобы его можно было анимировать в 0 */
+
     max-height: 200px; 
-    
-    /* Плавный переход для всех свойств, включая трансформацию и фильтры */
+
     transition: 
         transform 0.5s cubic-bezier(0.4, 0, 0.2, 1),
         opacity 0.4s ease,
@@ -682,7 +678,9 @@ body.no-scroll {
 }
 
 .cart-info {
-    flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .cart-controls {
@@ -711,18 +709,18 @@ body.no-scroll {
 }
 
 .cart-price {
-    min-width: 52px;          /* одинаковая ширина под любую цену */
+    width: 56px;         /* одинаковая ширина под любую цену */
     text-align: right;
     font-weight: 800;
     font-size: 15px;
 }
 
 .cart-remove {
-    margin-left: 0;
-    color: var(--accent);
-    font-weight: 800;
-    font-size: 13px;
-    padding-left: 8px;  
+  width: 58px;          /* фикс. ширина «Удалить» */
+  text-align: right;
+  color: var(--accent);
+  font-weight: 800;
+  font-size: 13px;
 }
 
 .promo-row {
