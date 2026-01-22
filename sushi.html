@@ -235,10 +235,11 @@
     }
 
     function render() {
-      const items = menu[currentTab] || [];
-      document.getElementById('grid').innerHTML = items.map((p, i) => `
+  const items = menu[currentTab] || [];
+  document.getElementById('grid').innerHTML = items.map((p, i) => `
     <div class="item" style="animation-delay:${i * 0.1}s" onclick="showDetails(${p.id})">
       ${p.tag ? `<div class="badge"><span class="badge-icon">${p.tagIcon}</span><span>${p.tag}</span></div>` : ''}
+      ${getQtyInCart(p.id) > 0 ? `<div class="cart-badge">${getQtyInCart(p.id)}</div>` : ''}
       <img src="${p.img}" class="item-img">
       <div style="font-weight:800;font-size:15px">${p.name}</div>
       <div style="font-size:11px;color:var(--text-gray)">${p.meta}</div>
@@ -246,7 +247,7 @@
         <span class="p-val">${p.price}₽</span>
       </div>
     </div>`).join('');
-    }
+}
 
     function showDetails(id) {
       const item = menu[currentTab].find(p => p.id === id) || Object.values(menu).flat().find(p => p.id === id);
