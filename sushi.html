@@ -176,7 +176,11 @@
         { id: 8, name: "Спайси эдамаме", price: 190, meta: "120 г", img: "https://images.unsplash.com/photo-1609501676725-7186f017a4b7?w=600&q=80", desc: "Молодые бобы с острым соусом.", tag: "HOT", tagIcon: "🌶️" }
       ],
       drinks: [
-        { id: 9, name: "Coca-Cola", price: 120, meta: "0.5 л", img: "https://images.unsplash.com/photo-1622708782596-13d5e5ac5a9e?w=600&q=80", desc: "Освежающая классика.", tag: "", tagIcon: "" },
+        {
+          id: 9, name: "Coca-Cola", price: 120,
+          sizes: [{ vol: '0.5 л', price: 120 }, { vol: '1 л', price: 190 }],
+          img: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=600&q=80", desc: "Лимон, мята, натуральный сок.", meta: "", tag: "", tagIcon: ""
+        },
         { id: 10, name: "ФRESH-лимонад", price: 180, meta: "0.4 л", img: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=600&q=80", desc: "Лимон, мята, натуральный сок.", tag: "NEW", tagIcon: "🔥" }
       ]
     };
@@ -282,22 +286,6 @@
       renderFilters();
     }
 
-    function render() {
-      const items = menu[currentTab] || [];
-      document.getElementById('grid').innerHTML = items.map((p, i) => `
-    <div class="item" style="animation-delay:${i * 0.1}s" onclick="showDetails(${p.id})">
-      ${p.tag ? `<div class="badge"><span class="badge-icon">${p.tagIcon}</span><span>${p.tag}</span></div>` : ''}
-      ${getQtyInCart(p.id) > 0 ? `<div class="cart-badge">${getQtyInCart(p.id)}</div>` : ''}
-      <img src="${p.img}" class="item-img">
-      <div style="font-weight:800;font-size:15px">${p.name}</div>
-      <div style="font-size:11px;color:var(--text-gray)">${p.meta}</div>
-      <div class="price-row">
-        <span class="p-val">${p.price}₽</span>
-      </div>
-    </div>`).join('');
-      renderFilters();          // ← новое
-      renderFilteredProducts();
-    }
 
     function showDetails(id) {
       const item = menu[currentTab].find(p => p.id === id) || Object.values(menu).flat().find(p => p.id === id);
@@ -379,23 +367,64 @@
     }
 
     /* новый рендер товаров с учётом фильтра */
-    function renderFilteredProducts(){
-  const bar = document.getElementById('filter-bar');
+    function renderFilteredProducts() {
+      const bar = document.getElementById('filter-bar');
 
-  if(showAllMode){
-    // 1. показываем всё
-    bar.style.display = 'none';                 // прячем полосу фильтров
-    const allProducts = Object.values(menu).flat();
-    renderFiltered(allProducts);
-  }else{
-    // 2. обычный режим категории
-    bar.style.display = 'flex';                 // показываем фильтры
-    const base = menu[currentTab] || [];
-    const fid  = activeFilter[currentTab] || 'all';
-    const filterObj = categoryFilters[currentTab].find(f=>f.id===fid);
-    const filtered = base.filter(filterObj.fn);
-    renderFiltered(filtered);
+      if (showAllMode) {
+        // 1. показываем всё
+        bar.style.display = 'none';                 // прячем полосу фильтров
+        const allProducts = Object.values(menu).flat();
+        renderFiltered(allProducts);
+      } else {
+        // 2. обычный режим категории
+        bar.style.display = 'flex';                 // показываем фильтры
+        const base = menu[currentTab] || [];
+        const fid = activeFilter[currentTab] || 'all';
+        const filterObj = categoryFilters[currentTab].find(f => f.id === fid);
+        const filtered = base.filter(filterObj.fn);
+        renderFiltered(filtered);
+      }
+    }
+    /* =============  БЫСТРЫЙ БИЛД-КАРТОЧКИ  ============= */
+function buildCard(p, i = 0) {
+  const inCart = cart.find(x => x.id == p.id && (x.sizeId || 0) == 0 && !x.isExtra);
+const qty    = inCart ? inCart.qty : 0;
+
+  let sizeHtml = '';
+  if (p.sizes?.length > 1) {
+    sizeHtml = `<div class="size-row" id="size-${p.id}" style="display:none">
+      ${p.sizes.map((s, idx) =>
+        `<span class="size-chip ${inCart && inCart.sizeId === idx ? 'active' : ''}"
+               onclick="toggleSize(event,${p.id},${idx})">${s.vol}</span>`).join('')}
+    </div>`;
   }
+
+  return `
+  <div class="item" style="animation-delay:${i * 0.1}s">
+
+    ${p.tag ? `<div class="badge"><span class="badge-icon">${p.tagIcon}</span><span>${p.tag}</span></div>` : ''}
+
+    <img src="${p.img}" class="item-img" onclick="showDetails(${p.id})">
+
+    <div style="font-weight:800;font-size:15px" onclick="showDetails(${p.id})">${p.name}</div>
+    <div style="font-size:11px;color:var(--text-gray)" onclick="showDetails(${p.id})">${p.meta}</div>
+
+    <!-- счётчик -->
+    <div class="counter-row">
+  <button class="counter-btn" onclick="changeQtyCard(event,${p.id},-1)">−</button>
+  <span class="counter-val">${qty}</span>
+  <button class="counter-btn" onclick="changeQtyCard(event,${p.id},1)">+</button>
+  ${p.sizes ? `<button class="size-toggle" onclick="toggleSizeRow(event,${p.id})">⚙️</button>` : ''}
+</div>
+
+    ${sizeHtml}
+
+    <!-- цена берётся из первого размера (если есть) -->
+    <div class="price-row" onclick="showDetails(${p.id})">
+      <span class="p-val">${p.sizes ? p.sizes[0].price : p.price}₽</span>
+    </div>
+
+  </div>`;
 }
 
     function addExtra(id) {
@@ -439,12 +468,10 @@
 
     function updateCartUI() {
       /* 0. ПЕРЕРИСОВЫВАЕМ ВИДИМУЮ СЕТКУ (динамика счётчиков) */
-      render();
-
       /* === МИНИ-КОРЗИНА: сумма и количество === */
       const subMini = cart.reduce((s, i) => s + i.price * (i.qty || 1), 0);
       document.getElementById('mini-sum').innerText = subMini + '₽'; // ← ВОТ ЭТО БЫЛО УДАЛЕНО
-
+      renderFilteredProducts(); // обновляем счётчики на карточках
       /* 1. СЕТКА ДОПОВ – убрал иконку и цену */
       const extrasGrid = document.getElementById('extras-grid');
       extrasGrid.innerHTML = extras.map(e => `
@@ -604,32 +631,67 @@
       );
       renderFiltered(filtered.length ? filtered : all);
     }
-    function getQtyInCart(id) {
-      const item = cart.find(x => x.id == id && !x.isExtra);
-      return item ? (item.qty || 1) : 0;
-    }
+    function getQtyInCart(id, sizeId = 0) {
+  const item = cart.find(x => x.id == id && (x.sizeId || 0) == sizeId && !x.isExtra);
+  return item ? item.qty : 0;
+}
     function renderFiltered(list) {
-      document.getElementById('grid').innerHTML = list.map((p, i) => `
-    <div class="item" style="animation-delay:${i * 0.1}s" onclick="showDetails(${p.id})">
-      ${p.tag ? `<div class="badge"><span class="badge-icon">${p.tagIcon}</span><span>${p.tag}</span></div>` : ''}
-      ${getQtyInCart(p.id) > 0 ? `<div class="cart-badge">${getQtyInCart(p.id)}</div>` : ''}
-      <img src="${p.img}" class="item-img">
-      <div style="font-weight:800;font-size:15px">${p.name}</div>
-      <div style="font-size:11px;color:var(--text-gray)">${p.meta}</div>
-      <div class="price-row">
-        <span class="p-val">${p.price}₽</span>
-      </div>
-    </div>`).join('');
-    }
-
-    function showAllCategories(){
-  showAllMode = true;                       // ← включаем режим «все товары»
-  document.querySelectorAll('.bottom-tab').forEach(t => t.classList.remove('active'));
-  renderFilteredProducts();                 // перерисовываем
-  triggerHaptic('medium');
+  document.getElementById('grid').innerHTML = list.map((p, i) => buildCard(p, i)).join('');
 }
 
+    function showAllCategories() {
+      showAllMode = true;                       // ← включаем режим «все товары»
+      document.querySelectorAll('.bottom-tab').forEach(t => t.classList.remove('active'));
+      renderFilteredProducts();                 // перерисовываем
+      triggerHaptic('medium');
+    }
 
+    /* helpers */
+function getCartItem(pid, sizeId = 0) {
+  return cart.find(x => x.id == pid && ((x.sizeId || 0) == sizeId));
+}
+
+/* показать/скрыть строку размеров */
+function toggleSizeRow(e, pid) {
+  e.stopPropagation();
+  const row = document.getElementById('size-' + pid);
+  row.style.display = row.style.display == 'none' ? 'flex' : 'none';
+}
+
+/* выбрать размер */
+function toggleSize(e, pid, sizeId) {
+  e.stopPropagation();
+  const p = Object.values(menu).flat().find(x => x.id == pid);
+  const oldItem = getCartItem(pid);
+  const oldSize = oldItem ? (oldItem.sizeId || 0) : 0;
+  if (oldSize == sizeId) return;
+
+  // убираем старую позицию
+  cart = cart.filter(x => !(x.id == pid && (x.sizeId || 0) == oldSize));
+  // добавляем новую
+  cart.push({ ...p, qty: 1, sizeId });
+  updateCartUI();
+  renderFilteredProducts();   // обновим цену и активный размер
+}
+
+/* +/- на карточке */
+function changeQtyCard(e, pid, delta) {
+  e.stopPropagation();
+  const p = Object.values(menu).flat().find(x => x.id == pid);
+  let item = cart.find(x => x.id == pid && (x.sizeId || 0) == 0);
+
+  if (!item) {
+    if (delta < 0) return;          // убавлять нечего
+    item = { ...p, qty: 0, sizeId: 0 };
+    cart.push(item);
+  }
+  item.qty = Math.max(0, item.qty + delta);
+  if (item.qty === 0) cart = cart.filter(x => x !== item);
+
+  updateCartUI();                   // рисуем бейджи, счётчики, итог
+  if (item.qty === 1 && delta > 0) showMiniCart(); // ПОКАЗЫВАЕМ ТОЛЬКО ПРИ ПЕРВОМ +
+  triggerHaptic(item.qty ? 'light' : 'medium');
+}
 
 
     /* ---------- ФИНАЛЬНЫЙ РАБОЧИЙ КОД ---------- */
