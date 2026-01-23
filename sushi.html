@@ -37,24 +37,28 @@
   </div>
   <!-- фильтры под категорию -->
   <!-- нижние табы -->
-  <nav class="bottom-tabs">
-    <button class="bottom-tab active" onclick="switchTab('rolls')">
-      <span class="bottom-icon">🍣</span>
-      <span>Роллы</span>
-    </button>
-    <button class="bottom-tab" onclick="switchTab('wok')">
-      <span class="bottom-icon">🍜</span>
-      <span>Воки</span>
-    </button>
-    <button class="bottom-tab" onclick="switchTab('snacks')">
-      <span class="bottom-icon">🥟</span>
-      <span>Закуски</span>
-    </button>
-    <button class="bottom-tab" onclick="switchTab('drinks')">
-      <span class="bottom-icon">🥤</span>
-      <span>Напитки</span>
-    </button>
-  </nav>
+<nav class="bottom-tabs">
+  <button class="bottom-tab active" onclick="showAllCategories()">
+    <span class="bottom-icon">🏠</span>
+    <span>Главная</span>
+  </button>
+  <button class="bottom-tab" onclick="switchTab('rolls')">
+    <span class="bottom-icon">🍣</span>
+    <span>Роллы</span>
+  </button>
+  <button class="bottom-tab" onclick="switchTab('wok')">
+    <span class="bottom-icon">🍜</span>
+    <span>Воки</span>
+  </button>
+  <button class="bottom-tab" onclick="switchTab('snacks')">
+    <span class="bottom-icon">🥟</span>
+    <span>Закуски</span>
+  </button>
+  <button class="bottom-tab" onclick="switchTab('drinks')">
+    <span class="bottom-icon">🥤</span>
+    <span>Напитки</span>
+  </button>
+</nav>
 
   <!-- плавающая корзина -->
   <div id="mini-cart" onclick="openCart()">
@@ -388,42 +392,41 @@
     /* =============  БЫСТРЫЙ БИЛД-КАРТОЧКИ  ============= */
 function buildCard(p, i = 0) {
   const inCart = cart.find(x => x.id == p.id && (x.sizeId || 0) == 0 && !x.isExtra);
-const qty    = inCart ? inCart.qty : 0;
+  const qty = inCart ? inCart.qty : 0;
+  
+  // Определяем текущий выбор размера и цену
+  let currentSizeId = inCart ? (inCart.sizeId || 0) : 0;
+  let currentPrice = p.sizes ? p.sizes[currentSizeId].price : p.price;
 
   let sizeHtml = '';
   if (p.sizes?.length > 1) {
-    sizeHtml = `<div class="size-row" id="size-${p.id}" style="display:none">
+    sizeHtml = `<div class="size-row">
       ${p.sizes.map((s, idx) =>
-        `<span class="size-chip ${inCart && inCart.sizeId === idx ? 'active' : ''}"
+        `<span class="size-chip ${currentSizeId === idx ? 'active' : ''}"
                onclick="toggleSize(event,${p.id},${idx})">${s.vol}</span>`).join('')}
     </div>`;
   }
 
   return `
   <div class="item" style="animation-delay:${i * 0.1}s">
-
     ${p.tag ? `<div class="badge"><span class="badge-icon">${p.tagIcon}</span><span>${p.tag}</span></div>` : ''}
-
     <img src="${p.img}" class="item-img" onclick="showDetails(${p.id})">
-
     <div style="font-weight:800;font-size:15px" onclick="showDetails(${p.id})">${p.name}</div>
     <div style="font-size:11px;color:var(--text-gray)" onclick="showDetails(${p.id})">${p.meta}</div>
 
     <!-- счётчик -->
     <div class="counter-row">
-  <button class="counter-btn" onclick="changeQtyCard(event,${p.id},-1)">−</button>
-  <span class="counter-val">${qty}</span>
-  <button class="counter-btn" onclick="changeQtyCard(event,${p.id},1)">+</button>
-  ${p.sizes ? `<button class="size-toggle" onclick="toggleSizeRow(event,${p.id})">⚙️</button>` : ''}
-</div>
+      <button class="counter-btn" onclick="changeQtyCard(event,${p.id},-1)">−</button>
+      <span class="counter-val">${qty}</span>
+      <button class="counter-btn" onclick="changeQtyCard(event,${p.id},1)">+</button>
+    </div>
 
     ${sizeHtml}
 
-    <!-- цена берётся из первого размера (если есть) -->
+    <!-- цена с учетом выбранного размера -->
     <div class="price-row" onclick="showDetails(${p.id})">
-      <span class="p-val">${p.sizes ? p.sizes[0].price : p.price}₽</span>
+      <span class="p-val">${currentPrice}₽</span>
     </div>
-
   </div>`;
 }
 
@@ -466,57 +469,101 @@ const qty    = inCart ? inCart.qty : 0;
       setTimeout(() => window.scrollBy(0, 120), 300);
     }
 
+  
+
     function updateCartUI() {
-      /* 0. ПЕРЕРИСОВЫВАЕМ ВИДИМУЮ СЕТКУ (динамика счётчиков) */
-      /* === МИНИ-КОРЗИНА: сумма и количество === */
-      const subMini = cart.reduce((s, i) => s + i.price * (i.qty || 1), 0);
-      document.getElementById('mini-sum').innerText = subMini + '₽'; // ← ВОТ ЭТО БЫЛО УДАЛЕНО
-      renderFilteredProducts(); // обновляем счётчики на карточках
-      /* 1. СЕТКА ДОПОВ – убрал иконку и цену */
-      const extrasGrid = document.getElementById('extras-grid');
-      extrasGrid.innerHTML = extras.map(e => `
-    <div class="extra-card" onclick="addExtraWithAnim('${e.id}', event)">
-        ${e.name}
-    </div>`).join('');
+  /* 0. ОБНОВЛЯЕМ ТОЛЬКО СЧЁТЧИКИ НА КАРТОЧКАХ – без полной перерисовки */
+  cart.forEach(item => {
+    const card = document.querySelector(`.item img[onclick*="showDetails(${item.id})"]`)?.closest('.item');
+    if (!card) return;
 
-      /* 2. СЧИТАЕМ ИТОГО */
-      let subtotal = cart.reduce((s, i) => s + i.price * (i.qty || 1), 0);
-      const freeDeliveryThreshold = 900;
-      let delivery = 0;
-      if (!promoApplied && subtotal < freeDeliveryThreshold) delivery = 150;
-      const total = subtotal + delivery;
-      document.getElementById('total-val').innerText = total + '₽';
+    // счётчик
+    const counterEl = card.querySelector('.counter-val');
+    if (counterEl) counterEl.textContent = item.qty || 0;
 
-      const freeEl = document.getElementById('delivery-free');
-      freeEl.innerText = delivery === 0
-        ? 'Бесплатная доставка'
-        : `Доставка 150₽ (бесплатно от ${freeDeliveryThreshold}₽)`;
+    // размеры и цена
+    if (item.sizes?.length) {
+      const activeSizeId = item.sizeId || 0;
+      const priceEl  = card.querySelector('.p-val');
+      const sizeChips = card.querySelectorAll('.size-chip');
 
-      document.getElementById('address').value = userData.address;
+      if (priceEl) priceEl.textContent = item.sizes[activeSizeId].price + '₽';
 
-      /* 3. СПИСОК ТОВАРОВ В КОРЗИНЕ – убрал иконку у extra */
-      const list = document.getElementById('cart-items');
-      if (cart.length === 0) {
-        document.getElementById('cart-empty').style.display = 'block';
-        list.innerHTML = '';
-      } else {
-        document.getElementById('cart-empty').style.display = 'none';
-        list.innerHTML = cart.map(i => `
-  <div class="cart-item">
-    <div class="cart-info">
-      <b>${i.name}</b>
-      ${!i.isExtra ? `<br><small>${i.price}₽</small>` : ''}
-    </div>
-    <div class="cart-controls">
-      <button class="cart-btn" onclick="changeQty('${i.id}', -1)">−</button>
-      <span class="cart-qty">${i.qty || 1}</span>
-      <button class="cart-btn" onclick="changeQty('${i.id}', 1)">+</button>
-    </div>
-    <span class="cart-price">${i.price * (i.qty || 1)}₽</span>
-    <span class="cart-remove" onclick="removeItem('${i.id}')">Удалить</span>
-  </div>`).join('');
-      }
+      sizeChips.forEach((chip, idx) => {
+        chip.classList.toggle('active', idx === activeSizeId);
+      });
     }
+  });
+
+  /* 1. МИНИ-КОРЗИНА */
+  const subMini = cart.reduce((s, i) => s + i.price * (i.qty || 1), 0);
+  const miniSumEl = document.getElementById('mini-sum');
+  if (miniSumEl) miniSumEl.innerText = subMini + '₽';
+
+  /* 2. СЕТКА ДОПОВ – без иконок, только названия */
+  const extrasGrid = document.getElementById('extras-grid');
+  if (extrasGrid) {
+    extrasGrid.innerHTML = extras.map(e =>
+      `<div class="extra-card" onclick="addExtraWithAnim('${e.id}', event)">${e.name}</div>`).join('');
+  }
+
+  /* 3. ИТОГОВАЯ СУММА И ДОСТАВКА */
+  let subtotal = cart.reduce((s, i) => s + i.price * (i.qty || 1), 0);
+  const freeDeliveryThreshold = 900;
+  let delivery = 0;
+  if (!promoApplied && subtotal < freeDeliveryThreshold) delivery = 150;
+  const total = subtotal + delivery;
+
+  const totalEl = document.getElementById('total-val');
+  if (totalEl) totalEl.innerText = total + '₽';
+
+  const freeEl = document.getElementById('delivery-free');
+  if (freeEl) {
+    freeEl.innerText = delivery === 0
+      ? 'Бесплатная доставка'
+      : `Доставка 150₽ (бесплатно от ${freeDeliveryThreshold}₽)`;
+  }
+
+  /* 4. АДРЕС */
+  const addrEl = document.getElementById('address');
+  if (addrEl) addrEl.value = userData.address || '';
+
+  /* 5. СПИСОК ТОВАРОВ В КОРЗИНЕ – без иконок у extra */
+  const list = document.getElementById('cart-items');
+  const empty = document.getElementById('cart-empty');
+  if (list) {
+    if (cart.length === 0) {
+      if (empty) empty.style.display = 'block';
+      list.innerHTML = '';
+    } else {
+      if (empty) empty.style.display = 'none';
+      list.innerHTML = cart.map(i => `
+        <div class="cart-item">
+          <div class="cart-info">
+            <b>${i.name}</b>
+            ${!i.isExtra ? `<br><small>${i.price}₽</small>` : ''}
+          </div>
+          <div class="cart-controls">
+            <button class="cart-btn" onclick="changeQty('${i.id}', -1)">−</button>
+            <span class="cart-qty">${i.qty || 1}</span>
+            <button class="cart-btn" onclick="changeQty('${i.id}', 1)">+</button>
+          </div>
+          <span class="cart-price">${i.price * (i.qty || 1)}₽</span>
+          <span class="cart-remove" onclick="removeItem('${i.id}')">Удалить</span>
+        </div>`).join('');
+    }
+  }
+
+  /* 6. ПОКАЗАТЬ/СКРЫТЬ МИНИ-КОРЗИНУ */
+  const mc = document.getElementById('mini-cart');
+  if (mc) {
+    if (cart.length) {
+      mc.style.display = 'flex';
+    } else {
+      mc.style.display = 'none';
+    }
+  }
+}
 
 
 
@@ -663,15 +710,30 @@ function toggleSize(e, pid, sizeId) {
   e.stopPropagation();
   const p = Object.values(menu).flat().find(x => x.id == pid);
   const oldItem = getCartItem(pid);
-  const oldSize = oldItem ? (oldItem.sizeId || 0) : 0;
-  if (oldSize == sizeId) return;
-
-  // убираем старую позицию
-  cart = cart.filter(x => !(x.id == pid && (x.sizeId || 0) == oldSize));
-  // добавляем новую
-  cart.push({ ...p, qty: 1, sizeId });
+  
+  if (oldItem) {
+    // Обновляем существующий товар
+    oldItem.sizeId = sizeId;
+    oldItem.price = p.sizes[sizeId].price;
+  } else {
+    // Добавляем новый
+    cart.push({ ...p, qty: 1, sizeId, price: p.sizes[sizeId].price });
+  }
+  
+  // Обновляем только эту карточку
+  const card = e.target.closest('.item');
+  if (card) {
+    const priceEl = card.querySelector('.p-val');
+    if (priceEl) priceEl.textContent = p.sizes[sizeId].price + '₽';
+    
+    const sizeChips = card.querySelectorAll('.size-chip');
+    sizeChips.forEach((chip, idx) => {
+      chip.classList.toggle('active', idx === sizeId);
+    });
+  }
+  
   updateCartUI();
-  renderFilteredProducts();   // обновим цену и активный размер
+  triggerHaptic('light');
 }
 
 /* +/- на карточке */
