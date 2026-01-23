@@ -32,9 +32,10 @@
 
   <div class="main-content">
     <div class="hero-slider" id="hero-slider"></div>
+    <div id="filter-bar" class="filter-bar"></div>
     <div class="grid" id="grid"></div>
   </div>
-
+  <!-- фильтры под категорию -->
   <!-- нижние табы -->
   <nav class="bottom-tabs">
     <button class="bottom-tab active" onclick="switchTab('rolls')">
@@ -151,6 +152,7 @@
   <script>
     /* ----------  тот же JS, что был, + новый поиск-островок  ---------- */
     let tg = window.Telegram.WebApp; tg.expand();
+    let showAllMode = true;
     let settings = {
       hapticEnabled: localStorage.getItem('haptic-enabled') !== 'false'
     };
@@ -207,18 +209,50 @@
       }, 3000);
     }
     let scrollBeforeDetail = 0; // куда скроллили до открытия деталей
-
-function showDetails(id) {
-  scrollBeforeDetail = window.pageYOffset; // запомнили
-  const item = menu[currentTab].find(p => p.id === id) || Object.values(menu).flat().find(p => p.id === id);
-  curProd = item;
-  document.getElementById('d-img').src = item.img;
-  document.getElementById('d-title').innerText = item.name;
-  document.getElementById('d-meta').innerText = item.meta;
-  document.getElementById('d-desc').innerText = item.desc;
-  openSheet('details-sheet');
-  triggerHaptic('medium');
-}
+    /* =====  ФИЛЬТРЫ ДЛЯ КАЖДОЙ КАТЕГОРИИ  ===== */
+    const categoryFilters = {
+      rolls: [
+        { id: 'all', name: 'Все', fn: () => true },
+        { id: 'phil', name: 'Филадельфия', fn: p => p.name.toLowerCase().includes('филадельфия') },
+        { id: 'tempura', name: 'Темпура', fn: p => p.name.toLowerCase().includes('темпура') },
+        { id: 'hot', name: 'Острые', fn: p => p.tag === 'HOT' }
+      ],
+      wok: [
+        { id: 'all', name: 'Все', fn: () => true },
+        { id: 'chicken', name: 'С курицей', fn: p => p.name.toLowerCase().includes('куриц') },
+        { id: 'beef', name: 'С говядиной', fn: p => p.name.toLowerCase().includes('говяд') },
+        { id: 'spicy', name: 'Острый', fn: p => p.tag === 'HOT' }
+      ],
+      snacks: [
+        { id: 'all', name: 'Все', fn: () => true },
+        { id: 'gyoza', name: 'Гёдза', fn: p => p.name.toLowerCase().includes('гёдза') },
+        { id: 'edamame', name: 'Эдамаме', fn: p => p.name.toLowerCase().includes('эдамаме') }
+      ],
+      drinks: [
+        { id: 'all', name: 'Все', fn: () => true },
+        { id: 'hot', name: 'Горячие', fn: p => p.desc.toLowerCase().includes('горяч') || p.name.toLowerCase().includes('горяч') },
+        { id: 'cold', name: 'Холодные', fn: p => !categoryFilters.drinks.find(f => f.id === 'hot').fn(p) },
+        { id: 'fresh', name: 'Свежие', fn: p => p.tag === 'NEW' }
+      ]
+    };
+    /* текущий активный фильтр для каждой категории */
+    let activeFilter = {
+      rolls: 'all',
+      wok: 'all',
+      snacks: 'all',
+      drinks: 'all'
+    };
+    function showDetails(id) {
+      scrollBeforeDetail = window.pageYOffset; // запомнили
+      const item = menu[currentTab].find(p => p.id === id) || Object.values(menu).flat().find(p => p.id === id);
+      curProd = item;
+      document.getElementById('d-img').src = item.img;
+      document.getElementById('d-title').innerText = item.name;
+      document.getElementById('d-meta').innerText = item.meta;
+      document.getElementById('d-desc').innerText = item.desc;
+      openSheet('details-sheet');
+      triggerHaptic('medium');
+    }
     function triggerHaptic(type = 'light') {
       // Если настройки говорят "выключено" — ничего не делаем
       if (typeof settings !== 'undefined' && !settings.hapticEnabled) return;
@@ -234,17 +268,18 @@ function showDetails(id) {
       }
     }
     function switchTab(tab) {
+      showAllMode = false;        // ← выключили режим «все товары»
       currentTab = tab;
 
-      // 1. Убираем подсветку со всех кнопок и даём её нажатой
+      // подсветка табов
       document.querySelectorAll('.bottom-tab').forEach(t => t.classList.remove('active'));
       if (event && event.currentTarget) event.currentTarget.classList.add('active');
 
-      // 2. Вибро-отклик
       triggerHaptic('light');
 
-      // 3. Перерисовываем экран (с актуальными счётчиками)
-      render();
+      // рисуем уже конкретную категорию + фильтры
+      renderFilteredProducts();
+      renderFilters();
     }
 
     function render() {
@@ -260,6 +295,8 @@ function showDetails(id) {
         <span class="p-val">${p.price}₽</span>
       </div>
     </div>`).join('');
+      renderFilters();          // ← новое
+      renderFilteredProducts();
     }
 
     function showDetails(id) {
@@ -321,7 +358,45 @@ function showDetails(id) {
         }, 450);
       }
     }
+    /* рисуем чипсы под текущую категорию */
+    function renderFilters() {
+      const bar = document.getElementById('filter-bar');
+      const cat = currentTab;        // rolls | wok | snacks | drinks
+      const list = categoryFilters[cat] || [];
+      const active = activeFilter[cat] || 'all';
 
+      bar.innerHTML = list.map(f => `
+    <div class="filter-chip ${f.id === active ? 'active' : ''}"
+         onclick="applyFilter('${f.id}')">${f.name}</div>`).join('');
+    }
+
+    /* клик по чипсу */
+    function applyFilter(id) {
+      activeFilter[currentTab] = id;
+      renderFilters();          // подсветка
+      renderFilteredProducts(); // режем товары
+      triggerHaptic('light');
+    }
+
+    /* новый рендер товаров с учётом фильтра */
+    function renderFilteredProducts(){
+  const bar = document.getElementById('filter-bar');
+
+  if(showAllMode){
+    // 1. показываем всё
+    bar.style.display = 'none';                 // прячем полосу фильтров
+    const allProducts = Object.values(menu).flat();
+    renderFiltered(allProducts);
+  }else{
+    // 2. обычный режим категории
+    bar.style.display = 'flex';                 // показываем фильтры
+    const base = menu[currentTab] || [];
+    const fid  = activeFilter[currentTab] || 'all';
+    const filterObj = categoryFilters[currentTab].find(f=>f.id===fid);
+    const filtered = base.filter(filterObj.fn);
+    renderFiltered(filtered);
+  }
+}
 
     function addExtra(id) {
       const item = extras.find(e => e.id === id);
@@ -354,52 +429,52 @@ function showDetails(id) {
       updateCartUI();
     }
 
-// ставим фокус и плавно скроллим к полю, чтобы курсор был виден
-function focusField(el) {
-  el.focus();
-  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  // поднимаем ещё выше, чтобы клавиатура не закрывала поле
-  setTimeout(() => window.scrollBy(0, 120), 300);
-}
+    // ставим фокус и плавно скроллим к полю, чтобы курсор был виден
+    function focusField(el) {
+      el.focus();
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // поднимаем ещё выше, чтобы клавиатура не закрывала поле
+      setTimeout(() => window.scrollBy(0, 120), 300);
+    }
 
-function updateCartUI() {
-  /* 0. ПЕРЕРИСОВЫВАЕМ ВИДИМУЮ СЕТКУ (динамика счётчиков) */
-  render();
+    function updateCartUI() {
+      /* 0. ПЕРЕРИСОВЫВАЕМ ВИДИМУЮ СЕТКУ (динамика счётчиков) */
+      render();
 
-  /* === МИНИ-КОРЗИНА: сумма и количество === */
-  const subMini = cart.reduce((s, i) => s + i.price * (i.qty || 1), 0);
-  document.getElementById('mini-sum').innerText = subMini + '₽'; // ← ВОТ ЭТО БЫЛО УДАЛЕНО
+      /* === МИНИ-КОРЗИНА: сумма и количество === */
+      const subMini = cart.reduce((s, i) => s + i.price * (i.qty || 1), 0);
+      document.getElementById('mini-sum').innerText = subMini + '₽'; // ← ВОТ ЭТО БЫЛО УДАЛЕНО
 
-  /* 1. СЕТКА ДОПОВ – убрал иконку и цену */
-  const extrasGrid = document.getElementById('extras-grid');
-  extrasGrid.innerHTML = extras.map(e => `
+      /* 1. СЕТКА ДОПОВ – убрал иконку и цену */
+      const extrasGrid = document.getElementById('extras-grid');
+      extrasGrid.innerHTML = extras.map(e => `
     <div class="extra-card" onclick="addExtraWithAnim('${e.id}', event)">
         ${e.name}
     </div>`).join('');
 
-  /* 2. СЧИТАЕМ ИТОГО */
-  let subtotal = cart.reduce((s, i) => s + i.price * (i.qty || 1), 0);
-  const freeDeliveryThreshold = 900;
-  let delivery = 0;
-  if (!promoApplied && subtotal < freeDeliveryThreshold) delivery = 150;
-  const total = subtotal + delivery;
-  document.getElementById('total-val').innerText = total + '₽';
+      /* 2. СЧИТАЕМ ИТОГО */
+      let subtotal = cart.reduce((s, i) => s + i.price * (i.qty || 1), 0);
+      const freeDeliveryThreshold = 900;
+      let delivery = 0;
+      if (!promoApplied && subtotal < freeDeliveryThreshold) delivery = 150;
+      const total = subtotal + delivery;
+      document.getElementById('total-val').innerText = total + '₽';
 
-  const freeEl = document.getElementById('delivery-free');
-  freeEl.innerText = delivery === 0
-    ? 'Бесплатная доставка'
-    : `Доставка 150₽ (бесплатно от ${freeDeliveryThreshold}₽)`;
+      const freeEl = document.getElementById('delivery-free');
+      freeEl.innerText = delivery === 0
+        ? 'Бесплатная доставка'
+        : `Доставка 150₽ (бесплатно от ${freeDeliveryThreshold}₽)`;
 
-  document.getElementById('address').value = userData.address;
+      document.getElementById('address').value = userData.address;
 
-  /* 3. СПИСОК ТОВАРОВ В КОРЗИНЕ – убрал иконку у extra */
-  const list = document.getElementById('cart-items');
-  if (cart.length === 0) {
-    document.getElementById('cart-empty').style.display = 'block';
-    list.innerHTML = '';
-  } else {
-    document.getElementById('cart-empty').style.display = 'none';
-    list.innerHTML = cart.map(i => `
+      /* 3. СПИСОК ТОВАРОВ В КОРЗИНЕ – убрал иконку у extra */
+      const list = document.getElementById('cart-items');
+      if (cart.length === 0) {
+        document.getElementById('cart-empty').style.display = 'block';
+        list.innerHTML = '';
+      } else {
+        document.getElementById('cart-empty').style.display = 'none';
+        list.innerHTML = cart.map(i => `
   <div class="cart-item">
     <div class="cart-info">
       <b>${i.name}</b>
@@ -413,8 +488,8 @@ function updateCartUI() {
     <span class="cart-price">${i.price * (i.qty || 1)}₽</span>
     <span class="cart-remove" onclick="removeItem('${i.id}')">Удалить</span>
   </div>`).join('');
-  }
-}
+      }
+    }
 
 
 
@@ -461,15 +536,15 @@ function updateCartUI() {
     function setPay(m, el) { payMethod = m; document.querySelectorAll('.pay-opt').forEach(o => o.classList.remove('active')); el.classList.add('active'); }
 
     function closeAll() {
-  document.querySelectorAll('.sheet').forEach(s => s.classList.remove('active'));
-  document.getElementById('overlay').classList.remove('active');
-  document.body.classList.remove('no-scroll');
+      document.querySelectorAll('.sheet').forEach(s => s.classList.remove('active'));
+      document.getElementById('overlay').classList.remove('active');
+      document.body.classList.remove('no-scroll');
 
-  // ждём 400 мс (время transition) и только потом скроллим
-  setTimeout(() => {
-    window.scrollTo({ top: scrollBeforeDetail, behavior: 'smooth' });
-  }, 400);
-}
+      // ждём 400 мс (время transition) и только потом скроллим
+      setTimeout(() => {
+        window.scrollTo({ top: scrollBeforeDetail, behavior: 'smooth' });
+      }, 400);
+    }
 
     function openSheet(id) {
       document.getElementById(id).classList.add('active');
@@ -547,19 +622,12 @@ function updateCartUI() {
     </div>`).join('');
     }
 
-    function showAllCategories() {
-      // Убираем активное выделение с табов внизу
-      document.querySelectorAll('.bottom-tab').forEach(t => t.classList.remove('active'));
-
-      // Собираем все товары из всех категорий объекта menu в один массив
-      const allProducts = Object.values(menu).flat();
-
-      // Используем уже готовую функцию для отрисовки
-      renderFiltered(allProducts);
-
-      // Добавляем легкую вибрацию для отклика (для Telegram)
-      triggerHaptic('medium');
-    }
+    function showAllCategories(){
+  showAllMode = true;                       // ← включаем режим «все товары»
+  document.querySelectorAll('.bottom-tab').forEach(t => t.classList.remove('active'));
+  renderFilteredProducts();                 // перерисовываем
+  triggerHaptic('medium');
+}
 
 
 
@@ -611,10 +679,10 @@ function updateCartUI() {
     })();
     /* ----------  ПЛАВАЮЩАЯ КОРЗИНА  ---------- */
     function showMiniCart() {
-  const mc = document.getElementById('mini-cart');
-  mc.style.display = 'flex';
-  mc.animate([{ transform: 'scale(0.8)', opacity: 0 }, { transform: 'scale(1)', opacity: 1 }], { duration: 200, fill: 'forwards' });
-}
+      const mc = document.getElementById('mini-cart');
+      mc.style.display = 'flex';
+      mc.animate([{ transform: 'scale(0.8)', opacity: 0 }, { transform: 'scale(1)', opacity: 1 }], { duration: 200, fill: 'forwards' });
+    }
     function hideMiniCart() {
       document.getElementById('mini-cart').style.display = 'none';
     }
@@ -678,7 +746,7 @@ function updateCartUI() {
 
 
     initHeroSlider();
-    render();
+    renderFilteredProducts();
     updateCartUI();
   </script>
 </body>

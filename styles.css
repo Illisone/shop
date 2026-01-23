@@ -964,3 +964,31 @@ body[data-theme="dark"] input:not(:checked) + .slider:before {
   padding: 0 4px;
   z-index: 10;
 }
+
+
+.filter-bar{
+  display: flex;
+  gap: 8px;
+  padding: 12px 20px 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.filter-bar::-webkit-scrollbar{display:none}
+
+.filter-chip{
+  background: var(--glass);
+  border: 0.5px solid var(--border);
+  color: var(--text-gray);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background .2s, color .2s;
+}
+.filter-chip.active{
+  background: var(--accent-light);
+  color: #000;
+}
