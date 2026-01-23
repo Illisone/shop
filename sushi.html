@@ -70,14 +70,41 @@
   <div class="overlay" id="overlay" onclick="closeAll()"></div>
 
   <!-- детали товара -->
-  <div id="details-sheet" class="sheet">
-    <div class="sheet-handle"></div>
-    <img id="d-img" style="width:100%;border-radius:22px;height:260px;object-fit:cover;">
-    <h2 id="d-title" style="margin:20px 0 5px;font-size:26px;font-weight:900;"></h2>
-    <p id="d-meta" style="color:var(--text-gray);font-size:14px;margin-bottom:15px;"></p>
-    <p id="d-desc" style="color:#bbb;line-height:1.5;font-size:15px;margin-bottom:20px;"></p>
-    <button class="btn-main" onclick="addToCartFromDetails()">Добавить в корзину</button>
+<div id="details-sheet" class="sheet">
+  <!-- размытый фон (по желанию) -->
+  <div class="sheet-blur-bg">
+    <img id="sheet-bg-img" src="" alt="">
+    <div class="sheet-blur-overlay"></div>
   </div>
+
+  <div class="sheet-handle"></div>
+
+  <!-- фото -->
+  <img id="d-img" class="detail-img">
+
+  <!-- текстовый блок -->
+  <div class="detail-header">
+    <h2 id="d-title" class="detail-title"></h2>
+    <p id="d-meta" class="detail-meta"></p>
+    <p id="d-desc" class="detail-desc"></p>
+
+    <!-- выбор веса (если есть) -->
+    <div id="d-sizes" class="detail-size-row"></div>
+
+    <!-- счётчик -->
+    <div class="detail-counter-row">
+      <button class="detail-counter-btn" onclick="changeDetailQty(-1)">−</button>
+      <span id="d-qty" class="detail-counter-val">1</span>
+      <button class="detail-counter-btn" onclick="changeDetailQty(1)">+</button>
+    </div>
+  </div>
+
+  <!-- фиксированный футер -->
+  <div class="detail-footer">
+    <span id="d-price" class="detail-price">0₽</span>
+    <button class="btn-add" onclick="addToCartFromDetails()">Добавить</button>
+  </div>
+</div>
 
   <!-- корзина-шторка -->
   <div id="cart-sheet" class="sheet">
@@ -161,6 +188,8 @@
       hapticEnabled: localStorage.getItem('haptic-enabled') !== 'false'
     };
     let cart = [], curProd = null, payMethod = 'cash', currentTab = 'rolls';
+    let detailQty = 1;          // сколько штук выбрано в деталке
+let detailSizeId = 0;       // какой объём выбран
     const lastSize = {};
     let promoApplied = false;
     let userData = { name: '—', phone: '—', address: '', bonus: 1250 };
@@ -295,6 +324,10 @@
     function showDetails(id) {
       const item = menu[currentTab].find(p => p.id === id) || Object.values(menu).flat().find(p => p.id === id);
       curProd = item;
+      detailQty = 1;                       // сброс количества
+detailSizeId = lastSize[item.id] || 0; // последний выбранный объём
+renderDetailSizes();                 // рисуем пилюли
+updateDetailPrice();                 // считаем цену
       document.getElementById('d-img').src = item.img;
       document.getElementById('d-title').innerText = item.name;
       document.getElementById('d-meta').innerText = item.meta;
@@ -304,14 +337,18 @@
     }
 
     function addToCartFromDetails() {
-      const exist = cart.find(x => x.id === curProd.id && !x.isExtra);
-      if (exist) exist.qty = (exist.qty || 1) + 1;
-      else cart.push({ ...curProd, qty: 1 });
-      updateCartUI();
-      showMiniCart();
-      closeAll();
-      tg.HapticFeedback.notificationOccurred('success');
-    }
+  const unitPrice = curProd.sizes ? curProd.sizes[detailSizeId].price : curProd.price;
+  const exist = cart.find(x => x.id === curProd.id && (x.sizeId || 0) === detailSizeId && !x.isExtra);
+  if (exist) {
+    exist.qty += detailQty;
+  } else {
+    cart.push({ ...curProd, qty: detailQty, sizeId: detailSizeId, price: unitPrice });
+  }
+  updateCartUI();
+  showMiniCart();
+  closeAll();
+  tg.HapticFeedback.notificationOccurred('success');
+}
 
     function changeQty(id, delta, sizeId = 0) {
   const item = cart.find(x => x.id == id && (x.sizeId || 0) == sizeId);
@@ -320,7 +357,35 @@
   triggerHaptic('light');
   updateCartUI();
 }
-
+function renderDetailSizes() {
+  const box = document.getElementById('d-sizes');
+  if (!curProd.sizes || curProd.sizes.length < 2) {
+    box.style.display = 'none';
+    return;
+  }
+  box.style.display = 'flex';
+  box.innerHTML = curProd.sizes.map((s, idx) =>
+    `<span class="detail-size-chip ${idx === detailSizeId ? 'active' : ''}"
+           onclick="selectDetailSize(${idx})">${s.vol}</span>`).join('');
+}
+function selectDetailSize(idx) {
+  detailSizeId = idx;
+  lastSize[curProd.id] = idx;   // запомнили
+  renderDetailSizes();
+  updateDetailPrice();
+  triggerHaptic('light');
+}
+function changeDetailQty(delta) {
+  detailQty = Math.max(1, detailQty + delta);
+  document.getElementById('d-qty').innerText = detailQty;
+  updateDetailPrice();
+  triggerHaptic('light');
+}
+function updateDetailPrice() {
+  const unitPrice = curProd.sizes ? curProd.sizes[detailSizeId].price : curProd.price;
+  const total = unitPrice * detailQty;
+  document.getElementById('d-price').innerText = total + '₽';
+}
 function removeItem(id, sizeId = 0) {
   const btn = event.target;
   const itemElement = btn.closest('.cart-item');
