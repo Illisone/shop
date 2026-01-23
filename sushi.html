@@ -161,6 +161,7 @@
       hapticEnabled: localStorage.getItem('haptic-enabled') !== 'false'
     };
     let cart = [], curProd = null, payMethod = 'cash', currentTab = 'rolls';
+    const lastSize = {};
     let promoApplied = false;
     let userData = { name: '—', phone: '—', address: '', bonus: 1250 };
 
@@ -312,13 +313,33 @@
       tg.HapticFeedback.notificationOccurred('success');
     }
 
-    function changeQty(id, delta) {
-      const item = cart.find(x => x.id == id); // Используем ==
-      if (!item) return;
-      item.qty = Math.max(1, (item.qty || 1) + delta);
-      triggerHaptic('light');
+    function changeQty(id, delta, sizeId = 0) {
+  const item = cart.find(x => x.id == id && (x.sizeId || 0) == sizeId);
+  if (!item) return;
+  item.qty = Math.max(1, (item.qty || 1) + delta);
+  triggerHaptic('light');
+  updateCartUI();
+}
+
+function removeItem(id, sizeId = 0) {
+  const btn = event.target;
+  const itemElement = btn.closest('.cart-item');
+
+  if (itemElement && !itemElement.classList.contains('cart-item-dissolve')) {
+    itemElement.style.maxHeight = itemElement.offsetHeight + 'px';
+    itemElement.offsetHeight;
+    itemElement.classList.add('cart-item-dissolve');
+
+    triggerHaptic('medium');
+
+    setTimeout(() => {
+      cart = cart.filter(x => !(x.id == id && (x.sizeId || 0) == sizeId));
       updateCartUI();
-    }
+      if (cart.length === 0) hideMiniCart();
+      triggerHaptic('success');
+    }, 450);
+  }
+}
 
     function removeItem(id) {
       const btn = event.target;
@@ -391,18 +412,16 @@
     }
     /* =============  БЫСТРЫЙ БИЛД-КАРТОЧКИ  ============= */
 function buildCard(p, i = 0) {
-  const inCart = cart.find(x => x.id == p.id && (x.sizeId || 0) == 0 && !x.isExtra);
-  const qty = inCart ? inCart.qty : 0;
-  
-  // Определяем текущий выбор размера и цену
-  let currentSizeId = inCart ? (inCart.sizeId || 0) : 0;
-  let currentPrice = p.sizes ? p.sizes[currentSizeId].price : p.price;
+  const sizeId = lastSize[p.id] || 0;           // последний выбор
+  const inCart = getCartItem(p.id, sizeId);
+  const qty    = inCart ? inCart.qty : 0;
+  const price  = p.sizes ? p.sizes[sizeId].price : p.price;
 
   let sizeHtml = '';
   if (p.sizes?.length > 1) {
     sizeHtml = `<div class="size-row">
       ${p.sizes.map((s, idx) =>
-        `<span class="size-chip ${currentSizeId === idx ? 'active' : ''}"
+        `<span class="size-chip ${sizeId === idx ? 'active' : ''}"
                onclick="toggleSize(event,${p.id},${idx})">${s.vol}</span>`).join('')}
     </div>`;
   }
@@ -414,7 +433,6 @@ function buildCard(p, i = 0) {
     <div style="font-weight:800;font-size:15px" onclick="showDetails(${p.id})">${p.name}</div>
     <div style="font-size:11px;color:var(--text-gray)" onclick="showDetails(${p.id})">${p.meta}</div>
 
-    <!-- счётчик -->
     <div class="counter-row">
       <button class="counter-btn" onclick="changeQtyCard(event,${p.id},-1)">−</button>
       <span class="counter-val">${qty}</span>
@@ -423,9 +441,8 @@ function buildCard(p, i = 0) {
 
     ${sizeHtml}
 
-    <!-- цена с учетом выбранного размера -->
     <div class="price-row" onclick="showDetails(${p.id})">
-      <span class="p-val">${currentPrice}₽</span>
+      <span class="p-val">${price}₽</span>
     </div>
   </div>`;
 }
@@ -537,20 +554,23 @@ function buildCard(p, i = 0) {
       list.innerHTML = '';
     } else {
       if (empty) empty.style.display = 'none';
-      list.innerHTML = cart.map(i => `
-        <div class="cart-item">
-          <div class="cart-info">
-            <b>${i.name}</b>
-            ${!i.isExtra ? `<br><small>${i.price}₽</small>` : ''}
-          </div>
-          <div class="cart-controls">
-            <button class="cart-btn" onclick="changeQty('${i.id}', -1)">−</button>
-            <span class="cart-qty">${i.qty || 1}</span>
-            <button class="cart-btn" onclick="changeQty('${i.id}', 1)">+</button>
-          </div>
-          <span class="cart-price">${i.price * (i.qty || 1)}₽</span>
-          <span class="cart-remove" onclick="removeItem('${i.id}')">Удалить</span>
-        </div>`).join('');
+      list.innerHTML = cart.map(i => {
+  const sizeLabel = i.sizes ? ` (${i.sizes[i.sizeId || 0].vol})` : '';
+  return `
+    <div class="cart-item">
+      <div class="cart-info">
+        <b>${i.name}${sizeLabel}</b>
+        ${!i.isExtra ? `<br><small>${i.price}₽</small>` : ''}
+      </div>
+      <div class="cart-controls">
+        <button class="cart-btn" onclick="changeQty('${i.id}', -1, ${i.sizeId || 0})">−</button>
+        <span class="cart-qty">${i.qty || 1}</span>
+        <button class="cart-btn" onclick="changeQty('${i.id}', 1, ${i.sizeId || 0})">+</button>
+      </div>
+      <span class="cart-price">${i.price * (i.qty || 1)}₽</span>
+      <span class="cart-remove" onclick="removeItem('${i.id}', ${i.sizeId || 0})">Удалить</span>
+    </div>`;
+}).join('');
     }
   }
 
@@ -709,49 +729,43 @@ function toggleSizeRow(e, pid) {
 function toggleSize(e, pid, sizeId) {
   e.stopPropagation();
   const p = Object.values(menu).flat().find(x => x.id == pid);
-  const oldItem = getCartItem(pid);
-  
-  if (oldItem) {
-    // Обновляем существующий товар
-    oldItem.sizeId = sizeId;
-    oldItem.price = p.sizes[sizeId].price;
-  } else {
-    // Добавляем новый
-    cart.push({ ...p, qty: 1, sizeId, price: p.sizes[sizeId].price });
+  lastSize[pid] = sizeId;                       // запомнили
+
+  /* если в корзине уже есть этот товар – только меняем объём и цену */
+  let item = getCartItem(pid);                  // ищем без привязки к size
+  if (item) {
+    item.sizeId = sizeId;
+    item.price  = p.sizes[sizeId].price;
+    updateCartUI();
+    triggerHaptic('light');
+    return;
   }
-  
-  // Обновляем только эту карточку
-  const card = e.target.closest('.item');
-  if (card) {
-    const priceEl = card.querySelector('.p-val');
-    if (priceEl) priceEl.textContent = p.sizes[sizeId].price + '₽';
-    
-    const sizeChips = card.querySelectorAll('.size-chip');
-    sizeChips.forEach((chip, idx) => {
-      chip.classList.toggle('active', idx === sizeId);
-    });
-  }
-  
+
+  /* если нет – добавляем 1 шт выбранного объёма */
+  cart.push({ ...p, qty: 1, sizeId, price: p.sizes[sizeId].price });
   updateCartUI();
-  triggerHaptic('light');
+  showMiniCart();
+  triggerHaptic('success');
 }
 
 /* +/- на карточке */
 function changeQtyCard(e, pid, delta) {
   e.stopPropagation();
-  const p = Object.values(menu).flat().find(x => x.id == pid);
-  let item = cart.find(x => x.id == pid && (x.sizeId || 0) == 0);
+  const p      = Object.values(menu).flat().find(x => x.id == pid);
+  const sizeId = lastSize[pid] || 0;            // последний выбор
+  let item     = getCartItem(pid, sizeId);
 
-  if (!item) {
-    if (delta < 0) return;          // убавлять нечего
-    item = { ...p, qty: 0, sizeId: 0 };
+  if (!item) {                                  // первое добавление
+    if (delta < 0) return;                      // убавлять нечего
+    item = { ...p, qty: 0, sizeId, price: p.sizes ? p.sizes[sizeId].price : p.price };
     cart.push(item);
   }
-  item.qty = Math.max(0, item.qty + delta);
-  if (item.qty === 0) cart = cart.filter(x => x !== item);
 
-  updateCartUI();                   // рисуем бейджи, счётчики, итог
-  if (item.qty === 1 && delta > 0) showMiniCart(); // ПОКАЗЫВАЕМ ТОЛЬКО ПРИ ПЕРВОМ +
+  item.qty = Math.max(0, item.qty + delta);
+  if (item.qty === 0) cart = cart.filter(x => !(x.id == pid && (x.sizeId || 0) == sizeId));
+
+  updateCartUI();
+  if (item.qty === 1 && delta > 0) showMiniCart();
   triggerHaptic(item.qty ? 'light' : 'medium');
 }
 
